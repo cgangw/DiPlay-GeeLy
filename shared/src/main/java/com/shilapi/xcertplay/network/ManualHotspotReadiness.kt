@@ -21,35 +21,49 @@ internal data class HotspotNetworkSnapshot(
     val defaultInterface: String?,
     val consistent: Boolean = true,
     val apEnabled: Boolean? = true,
+    // tianwen | Only routes to clients reported by the factory AP can supplement Android ownership.
+    val vendorHostAddresses: Map<String, InetAddress> = emptyMap(),
 )
 
-internal data class HotspotSelection(val name: String, val index: Int, val address: InetAddress) {
+internal data class HotspotSelection(val name: String, val index: Int, val address: InetAddress,
+    val factoryRoute: Boolean = false) {
     fun sameAddress(other: HotspotSelection): Boolean = name == other.name && index == other.index &&
         address.address.contentEquals(other.address.address) &&
-        (address as? Inet6Address)?.scopeId == (other.address as? Inet6Address)?.scopeId
+        (address as? Inet6Address)?.scopeId == (other.address as? Inet6Address)?.scopeId &&
+        factoryRoute == other.factoryRoute
 }
 
 internal fun selectHotspotInterface(snapshot: HotspotNetworkSnapshot, log: (String) -> Unit): HotspotSelection? {
-    if (!snapshot.consistent || snapshot.apEnabled == false) {
+    // tianwen | Android AP off no longer rejects the whole sample: a verified factory route may still match.
+    if (!snapshot.consistent) {
         log("hotspot sample rejected: network_changed=${!snapshot.consistent} apEnabled=${snapshot.apEnabled}")
         return null
     }
     return snapshot.interfaces.mapNotNull { iface ->
         val owned = snapshot.apInterfaces?.contains(iface.name) == true
         val upstream = snapshot.wifiUpstreams?.contains(iface.name) == true
+        val vendorAddress = snapshot.vendorHostAddresses[iface.name]?.takeIf { host ->
+            iface.addresses.any { it.address.contentEquals(host.address) } &&
+                (host is Inet4Address && !host.isAnyLocalAddress && !host.isLoopbackAddress &&
+                    !host.isMulticastAddress && !host.isLinkLocalAddress ||
+                    host is Inet6Address && host.isLinkLocalAddress && host.scopeId == iface.index)
+        }
+        // Keep the upstream platform-address rule (private/vendor subnets on a named AP); the
+        // factory-reported client route takes precedence when present.
         val hotspotAddress = wirelessHostAddress(iface.addresses.filter {
             it is Inet6Address && it.isLinkLocalAddress || publishesHotspotAddress(it)
         }, iface.index)
-        // A vendor AP interface may publish a non-private subnet: the reference head unit hands out
-        // 198.18.34.x on its eth0.3 VLAN (#573), which isSiteLocalAddress() rejects. The wider rule
-        // applies only to an interface already named as the hotspot; an ordinary station interface
-        // still has to publish a private address before it may stand in for one.
-        val address = if (owned) hotspotAddress else hotspotAddress?.takeIf {
+        val platformAddress = if (owned) hotspotAddress else hotspotAddress?.takeIf {
             it !is Inet4Address || it.isSiteLocalAddress
         }
+        val address = vendorAddress ?: platformAddress
         val reason = when {
             !iface.up || iface.index <= 0 -> "interface_down"
             address == null -> "address_unavailable"
+            // tianwen | A reported AP client can overlap the STA subnet; observed ownership wins.
+            upstream && !owned -> "wifi_upstream"
+            vendorAddress != null -> "ecarx_client_route"
+            snapshot.apEnabled == false -> "android_ap_off"
             owned -> "platform_ap"
             snapshot.apInterfaces != null -> "not_platform_ap"
             upstream -> "wifi_upstream"
@@ -60,11 +74,19 @@ internal fun selectHotspotInterface(snapshot: HotspotNetworkSnapshot, log: (Stri
         }
         log("hotspot candidate iface=${iface.name} index=${iface.index} " +
             "family=${if (address is Inet6Address) "IPv6" else if (address != null) "IPv4" else "none"} " +
+            // tianwen | Selection filters must not conceal factory/non-private IPv4 in redacted reports.
+            "availableFamilies=${iface.addresses.map { if (it is Inet4Address) "IPv4" else "IPv6" }.distinct().sorted().joinToString("+").ifEmpty { "none" }} " +
+            "ipv4Classes=${iface.addresses.filterIsInstance<Inet4Address>().map(EcarxClientRoute::addressClass).distinct().sorted().joinToString("+").ifEmpty { "none" }} " +
             "scope=${(address as? Inet6Address)?.scopeId ?: 0} evidence=$reason " +
             "ap=${snapshot.apInterfaces?.let { if (owned) "yes" else "no" } ?: "unobservable"} " +
             "defaultConflict=${owned && (upstream || snapshot.defaultInterface == iface.name)}")
-        if (reason != "platform_ap" && reason != "wireless_non_upstream") null
-        else (if (owned) 100 else 0) to HotspotSelection(iface.name, iface.index, address!!)
+        val priority = when (reason) {
+            "ecarx_client_route" -> 150
+            "platform_ap" -> 100
+            "wireless_non_upstream" -> 0
+            else -> return@mapNotNull null
+        }
+        priority to HotspotSelection(iface.name, iface.index, address!!, reason == "ecarx_client_route")
     }.sortedWith(compareByDescending<Pair<Int, HotspotSelection>> { it.first }.thenBy { it.second.name })
         .firstOrNull()?.second
 }

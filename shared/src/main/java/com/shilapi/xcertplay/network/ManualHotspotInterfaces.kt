@@ -22,10 +22,13 @@ internal class ManualHotspotInterfaces(
 ) : Closeable {
     private val connectivity = context.getSystemService(ConnectivityManager::class.java)
     private val publicTethering = if (Build.VERSION.SDK_INT >= 36) PublicTethering(context) else null
+    // tianwen | One reader belongs to this manager; closing it never changes the factory AP.
+    private val vendor = EcarxHotspotReader(context, onDiagnostic)
     private var lastLegacyDiagnostic: String? = null
     private var lastOwnershipDiagnostic: String? = null
 
     fun sample(): HotspotNetworkSnapshot {
+        val vendorState = vendor.snapshot()
         val before = runCatching { connectivity?.activeNetwork }
         val upstreams = runCatching {
             checkNotNull(connectivity)
@@ -48,7 +51,8 @@ internal class ManualHotspotInterfaces(
                 }.getOrNull()
             }
         }.getOrDefault(emptyList())
-        val apEnabled = CarHotspotStatus.isEnabled(context)
+        // tianwen | Only a verified factory route may override Android AP off.
+        val apEnabled = CarHotspotStatus.androidEnabled(context)
         val ap = apInterfaces(
             observed = publicTethering?.interfaces ?: legacyApInterfaces(),
             interfaces = interfaces,
@@ -61,8 +65,11 @@ internal class ManualHotspotInterfaces(
             interfaces, ap, upstreams, defaultName,
             consistent = before.isSuccess && after.isSuccess && before.getOrNull() == after.getOrNull(),
             apEnabled = apEnabled,
+            vendorHostAddresses = vendorState.routedHosts,
         )
     }
+
+    fun vendorDiagnosticSnapshot(): String = vendor.diagnosticSnapshot()
 
     /**
      * Some head units run the car hotspot on a Wi-Fi chip the platform never reports as a tether
@@ -142,7 +149,10 @@ internal class ManualHotspotInterfaces(
         ap
     }.getOrNull()
 
-    override fun close() { publicTethering?.close() }
+    override fun close() {
+        publicTethering?.close()
+        vendor.close()
+    }
 
     companion object {
         /** Interface that carried the car hotspot on the reference QUALCOMM CS11 unit (#573). */
