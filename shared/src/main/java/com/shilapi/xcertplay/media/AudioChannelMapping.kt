@@ -1,6 +1,13 @@
-package com.shilapi.xcertplay.media
+﻿package com.shilapi.xcertplay.media
 
 import android.media.AudioManager
+
+// carlito | FaceTime uses the same communication resources as a telephone call.
+internal fun isPhoneAudio(type: String) = type.equals("telephony", true) || type.equals("facetime", true)
+
+// carlito | CarPlay default carries guidance; alert/compatibility remain on the shared media output.
+internal fun isVehicleNavigationAudio(type: String): Boolean =
+    type.equals("default", true) || type.equals("guidance", true) || type.equals("navigation", true)
 
 internal enum class AudioChannelMappingMode {
     MOBILE_COMPATIBLE,
@@ -12,6 +19,7 @@ internal enum class AudioChannel {
     PHONE,
     ASSISTANT,
     NAVIGATION,
+    RINGTONE,
 }
 
 internal enum class AudioContentType {
@@ -69,7 +77,8 @@ internal object AudioChannelMapper {
         payloadType: Int,
         navigationStreamType: Int,
     ): AudioChannelSelection = when (audioType) {
-        "telephony" -> AudioChannelSelection(AudioChannel.PHONE, AudioContentType.SPEECH)
+        "telephony", "facetime" -> AudioChannelSelection(AudioChannel.PHONE, AudioContentType.SPEECH)
+        "ringtone", "ring" -> AudioChannelSelection(AudioChannel.RINGTONE, AudioContentType.SPEECH)
         "speechrecognition" ->
             AudioChannelSelection(AudioChannel.ASSISTANT, AudioContentType.SPEECH)
         "media" -> AudioChannelSelection(AudioChannel.MEDIA, AudioContentType.MUSIC)
@@ -83,7 +92,8 @@ internal object AudioChannelMapper {
         payloadType: Int,
         navigationStreamType: Int,
     ): AudioChannelSelection = when (audioType) {
-        "telephony" -> AudioChannelSelection(AudioChannel.PHONE, AudioContentType.SPEECH)
+        "telephony", "facetime" -> AudioChannelSelection(AudioChannel.PHONE, AudioContentType.SPEECH)
+        "ringtone", "ring" -> AudioChannelSelection(AudioChannel.RINGTONE, AudioContentType.SPEECH)
         "speechrecognition" ->
             AudioChannelSelection(AudioChannel.ASSISTANT, AudioContentType.SPEECH)
         "media", "compatibility" ->

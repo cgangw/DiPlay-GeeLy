@@ -1,4 +1,4 @@
-package com.shilapi.xcertplay.media
+﻿package com.shilapi.xcertplay.media
 
 import android.media.AudioFormat as AndroidAudioFormat
 import android.media.AudioManager
@@ -16,6 +16,7 @@ import java.io.Closeable
 import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.InetAddress
+import java.net.Inet6Address
 import java.net.InetSocketAddress
 import java.util.concurrent.atomic.AtomicBoolean
 import com.shilapi.xcertplay.telecom.PhoneAudioRoute
@@ -35,6 +36,11 @@ internal class MicrophoneUplink(
     private val echoCancellerFactory: (Int, Int, Int) -> CallEchoCanceller? = { frame, rate, tail ->
         SpeexEchoCanceller.create(frame, rate, tail)
     },
+    private val factorySource: Int? = null,
+    // carlito | Per-role input routing and counters survive focus-related capture restarts.
+    private val preferredInput: AudioOutputDevice? = null,
+    private val audioManager: AudioManager? = null,
+    private val counters: MicrophoneCounters = MicrophoneCounters(),
     private val opusEncoderFactory: (Int) -> MicrophoneOpusEncoder? = { bitrate ->
         MicrophoneOpusEncoders.create(
             bitrate = bitrate,
@@ -44,8 +50,6 @@ internal class MicrophoneUplink(
         )
     },
     private val noAudioRestartMillis: Long = NO_AUDIO_RESTART_MILLIS,
-    /** Read for a report window that recorded no sound; see [silenceDetail]. */
-    private val audioManager: AudioManager? = null,
 ) : Closeable {
     private val running = AtomicBoolean(false)
     private val stats = MicrophoneCaptureStats(config, report = { message ->
@@ -80,19 +84,20 @@ internal class MicrophoneUplink(
         }
 
         val source = when {
-            config.audioType == "telephony" -> telephonyMicrophoneSource(
-                speakerphoneCall = speakerphoneCall,
-                carPhoneState = PhoneAudioRoute.carPlayCallsUseCarAudio(),
-                geelyHeadUnit = com.shilapi.xcertplay.network.GeelyHeadUnit.detected,
-            )
             // The Geely/Lynk head unit only opens the microphone for the voice-communication
             // source; its voice-recognition source records silence, so Siri never hears.
-            config.audioType == "speechrecognition" ->
+            config.audioType.equals("speechrecognition", true) ->
                 if (com.shilapi.xcertplay.network.GeelyHeadUnit.detected) {
                     MediaRecorder.AudioSource.VOICE_COMMUNICATION
                 } else {
                     MediaRecorder.AudioSource.VOICE_RECOGNITION
                 }
+            isPhoneAudio(config.audioType) && speakerphoneCall -> MediaRecorder.AudioSource.MIC
+            isPhoneAudio(config.audioType) -> telephonyMicrophoneSource(
+                speakerphoneCall = speakerphoneCall,
+                carPhoneState = PhoneAudioRoute.carPlayCallsUseCarAudio(),
+                geelyHeadUnit = com.shilapi.xcertplay.network.GeelyHeadUnit.detected,
+            )
             else -> MediaRecorder.AudioSource.MIC
         }
         stats.useSource(source)
@@ -115,13 +120,17 @@ internal class MicrophoneUplink(
         }
         val bufferSize = maxOf(minBuffer * 2, config.frameBytes * 4)
         // Some head units throw on VOICE_RECOGNITION at build(); VOICE_COMMUNICATION works there.
-        val nextRecorder = createRecorder(source, channelMask, bufferSize)
-            ?: if (source == MediaRecorder.AudioSource.VOICE_RECOGNITION) {
-                stats.useSource(MediaRecorder.AudioSource.VOICE_COMMUNICATION)
-                createRecorder(MediaRecorder.AudioSource.VOICE_COMMUNICATION, channelMask, bufferSize)
-            } else {
-                null
+        // carlito | Keep a supported factory source first, then the Android source and Siri fallback.
+        val sources = listOfNotNull(factorySource, source,
+            MediaRecorder.AudioSource.VOICE_COMMUNICATION.takeIf { source == MediaRecorder.AudioSource.VOICE_RECOGNITION })
+        val nextRecorder = sources.distinct().firstNotNullOfOrNull { candidate ->
+            createStartedRecorder(candidate, channelMask, bufferSize)?.also {
+                if (candidate == MediaRecorder.AudioSource.VOICE_COMMUNICATION && source == MediaRecorder.AudioSource.VOICE_RECOGNITION) {
+                    // tianwen | Upstream renamed the helper; keep the same reported source.
+                    stats.useSource(MediaRecorder.AudioSource.VOICE_COMMUNICATION)
+                }
             }
+        }
         if (nextRecorder == null) {
             nextEncoder?.close()
             running.set(false)
@@ -131,11 +140,14 @@ internal class MicrophoneUplink(
         val nextSocket = try {
             DatagramSocket(null).apply {
                 reuseAddress = true
-                bind(InetSocketAddress(InetAddress.getByName("::"), 0))
+                // carlito | Match the negotiated peer: IPv4 capture must not require an IPv6 socket.
+                val wildcard = if (config.host is Inet6Address) "::" else "0.0.0.0"
+                bind(InetSocketAddress(InetAddress.getByName(wildcard), 0))
             }
         } catch (error: Exception) {
             Log.e(TAG, "microphone socket creation failed", error)
             stats.failure(MicrophoneFailureStage.SOCKET_CREATION, error)
+            releaseCaptureEffects()
             nextRecorder.release()
             nextEncoder?.close()
             running.set(false)
@@ -146,14 +158,6 @@ internal class MicrophoneUplink(
         socket = nextSocket
         opusEncoder = nextEncoder
         return try {
-            if (config.audioType == "telephony") {
-                echoCanceller = createEchoCanceller()
-                if (!speakerphoneCall) effects = voiceEffects(nextRecorder.audioSessionId)
-                if (echoReference != null) {
-                    Log.i(TAG, "microphone echo canceller enabled=${echoCanceller != null} tail=${ECHO_TAIL_MILLIS}ms")
-                }
-            }
-            nextRecorder.startRecording()
             stats.started(routeType(nextRecorder))
             thread = Thread({ capture(nextRecorder, nextSocket) }, "carplay-mic").apply {
                 isDaemon = true
@@ -165,6 +169,47 @@ internal class MicrophoneUplink(
             stats.failure(MicrophoneFailureStage.RECORDING, error)
             release()
             false
+        }
+    }
+
+    // carlito | A source is usable only after recording starts; vendor HALs can initialize
+    // a recorder that then throws or silently remains stopped. Release it before trying Siri's
+    // fallback or the ordinary Android source after a factory source.
+    private fun createStartedRecorder(source: Int, channelMask: Int, bufferSize: Int): AudioRecord? {
+        val candidate = createRecorder(source, channelMask, bufferSize) ?: return null
+        return try {
+            if (config.audioType == "telephony") {
+                echoCanceller = createEchoCanceller()
+                // carlito | Cabin capture keeps the upstream MIC path without communication effects.
+                if (!speakerphoneCall) effects = voiceEffects(candidate.audioSessionId)
+                if (echoReference != null) {
+                    Log.i(TAG, "microphone echo canceller enabled=${echoCanceller != null} tail=${ECHO_TAIL_MILLIS}ms")
+                }
+            }
+            applyInputDevice(candidate)
+            candidate.startRecording()
+            check(candidate.recordingState == AudioRecord.RECORDSTATE_RECORDING) {
+                "Microphone source $source did not enter the recording state"
+            }
+            candidate
+        } catch (error: Exception) {
+            Log.e(TAG, "microphone recording failed source=$source", error)
+            stats.failure(MicrophoneFailureStage.RECORDING, error,
+                code = runCatching { candidate.recordingState }.getOrNull())
+            releaseCaptureEffects()
+            runCatching { candidate.release() }
+            null
+        }
+    }
+
+    private fun releaseCaptureEffects() {
+        val currentEffects = effects
+        effects = emptyList()
+        currentEffects.forEach(::releaseEffect)
+        val currentCanceller = echoCanceller
+        echoCanceller = null
+        runCatching { currentCanceller?.close() }.onFailure {
+            Log.w(TAG, "microphone echo canceller release failed", it)
         }
     }
 
@@ -281,7 +326,6 @@ internal class MicrophoneUplink(
         runCatching { android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_AUDIO) }
         val frame = ByteArray(config.frameBytes)
         val readBuffer = ByteArray(maxOf(frame.size, MIN_READ_BYTES))
-        val counters = MicrophoneCounters()
         val routeInfo = { routeType(recorder) }
         val ownSession = recorder.audioSessionId
         val silence = audioManager?.let { manager -> { silenceDetail(manager, ownSession) } }
@@ -412,13 +456,13 @@ internal class MicrophoneUplink(
         body: ByteArray,
         samples: Int,
     ) {
-        val packet = MicrophonePacketizer.sealPacket(
+        val packet = synchronized(counters) { MicrophonePacketizer.sealPacket(
             key = config.key,
             payloadType = config.payloadType,
             counters = counters,
             body = body,
             samples = samples,
-        )
+        ) }
         try {
             socket.send(DatagramPacket(packet, packet.size, config.host, config.port))
             stats.sent()
@@ -441,6 +485,17 @@ internal class MicrophoneUplink(
             .map { MicrophoneCaptureStats.sourceName(it.clientAudioSource) }
         return "audioMode=${manager.mode} otherRecordings=" +
             if (others.isEmpty()) "none" else others.take(MAX_LISTED_RECORDINGS).joinToString(",", "[", "]")
+    }
+
+    fun refreshInputDevice() { recorder?.let(::applyInputDevice) }
+
+    private fun applyInputDevice(record: AudioRecord) {
+        runCatching {
+            val device = preferredInput?.resolveInput(audioManager)
+            val accepted = record.setPreferredDevice(device)
+            if (!accepted) record.setPreferredDevice(null)
+            if (preferredInput != null) onDiagnostic("Audio: microphone preferred=${device?.id} accepted=$accepted")
+        }.onFailure { runCatching { record.setPreferredDevice(null) } }
     }
 
     /** Capture can continue with the same recorder if the optional native processor stops working. */
@@ -499,11 +554,7 @@ internal class MicrophoneUplink(
     @Synchronized
     private fun release() {
         running.set(false)
-        val currentEffects = effects
-        effects = emptyList()
-        currentEffects.forEach(::releaseEffect)
-        echoCanceller?.close()
-        echoCanceller = null
+        releaseCaptureEffects()
         val currentRecorder = recorder
         recorder = null
         try {
