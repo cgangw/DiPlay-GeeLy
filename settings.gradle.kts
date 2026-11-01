@@ -27,6 +27,8 @@ include(":common")
 include(":mobile")
 include(":automotive")
 include(":shared")
+// tianwen | Client for the separate GD vehicle bridge APK.
+include(":vehicle-probe")
 include(":maphost")
 project(":maphost").projectDir = file("samples/maphost")
 include(":home")
