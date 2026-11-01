@@ -39,6 +39,8 @@ class DiagnosticExportUiTest {
             override fun getContract() = androidx.activity.result.contract.ActivityResultContracts.CreateDocument("text/plain")
         }
         ReflectionHelpers.setField(activity, "export", missingPicker)
+        // The report viewer is part of the developer diagnostics in this build.
+        SteeringProfiles.unlockDeveloper(activity)
         try {
             ReflectionHelpers.callInstanceMethod<Unit>(activity, "chooseReportDestination")
             val deadline = System.nanoTime() + 5_000_000_000L

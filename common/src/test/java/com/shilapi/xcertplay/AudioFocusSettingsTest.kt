@@ -54,6 +54,8 @@ class AudioFocusSettingsTest {
         val activity = Robolectric.buildActivity(DiPlayActivity::class.java).get()
         activity.setTheme(android.R.style.Theme_Material_NoActionBar)
         activity.getSharedPreferences("xcertplay_airplay", 0).edit().clear().commit()
+        // tianwen | Car builds enable audio focus by default; this test checks the dependent prompt row.
+        AirPlayPersistence.saveAudioFocusEnabled(activity, false)
         assertFalse(AirPlayPersistence.loadNavigationPromptAudioFocus(activity))
         val page = LinearLayout(activity)
         DiPlayActivity::class.java.getDeclaredMethod("audioFocusControls", LinearLayout::class.java)

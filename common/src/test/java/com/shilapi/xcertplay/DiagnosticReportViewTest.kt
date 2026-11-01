@@ -42,6 +42,8 @@ class DiagnosticReportViewTest {
             DiPlayActivity::class.java,
             Intent(RuntimeEnvironment.getApplication(), DiPlayActivity::class.java).putExtra("page", "settings"),
         ).setup().get().also { activity = it }
+        // The report viewer is part of the developer diagnostics in this build.
+        SteeringProfiles.unlockDeveloper(screen)
         val started = System.nanoTime()
         DiPlayActivity::class.java.getDeclaredMethod("showDiagnosticReport", String::class.java)
             .apply { isAccessible = true }.invoke(screen, report)

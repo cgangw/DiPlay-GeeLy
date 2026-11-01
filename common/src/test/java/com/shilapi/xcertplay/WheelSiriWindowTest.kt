@@ -284,9 +284,8 @@ class WheelSiriWindowTest {
         val doublePress = texts.indexOf(settings.getString(R.string.wheel_siri_double_press))
         val interval = texts.indexOfFirst { it.startsWith(settings.getString(R.string.wheel_siri_double_press_interval)) }
         val delay = texts.indexOfFirst { it.startsWith(settings.getString(R.string.wheel_siri_trigger_delay)) }
-        val assignmentText = settings.getString(R.string.wheel_key_assign,
-            settings.getString(R.string.wheel_key_role_siri),
-            WheelZoomSettings.key(settings, WheelZoomSettings.Role.SIRI)?.toString())
+        val assignmentText = assignText(WheelZoomSettings.Role.SIRI,
+            WheelZoomSettings.key(settings, WheelZoomSettings.Role.SIRI))
         val assignment = texts.indexOf(assignmentText)
         assertTrue(doublePress in 0 until interval)
         assertTrue(interval in 0 until delay)
@@ -314,8 +313,7 @@ class WheelSiriWindowTest {
             it.contentDescription == settings.getString(R.string.wheel_map_zoom)
         })
         assertTrue(views(controls).filterIsInstance<TextView>().any {
-            it.text.toString() == settings.getString(R.string.wheel_key_assign,
-                settings.getString(R.string.wheel_key_role_joystick), joystickKey.toString())
+            it.text.toString() == assignText(WheelZoomSettings.Role.JOYSTICK, joystickKey)
         })
 
         joystick.performClick()
@@ -336,8 +334,7 @@ class WheelSiriWindowTest {
             it.contentDescription == settings.getString(R.string.wheel_media_play_pause) && it.isChecked
         })
         assertTrue(views(controls).filterIsInstance<TextView>().any {
-            it.text.toString() == settings.getString(R.string.wheel_key_assign,
-                settings.getString(R.string.wheel_key_role_media_play_pause), key.toString())
+            it.text.toString() == assignText(WheelZoomSettings.Role.MEDIA_PLAY_PAUSE, key)
         })
         assertSharedServiceSetupOnce(controls)
         assertTrue(WheelKeyService.wanted(settings))
@@ -538,7 +535,11 @@ class WheelSiriWindowTest {
             WheelZoomSettings.Role.MEDIA_PLAY_PAUSE -> R.string.wheel_key_role_media_play_pause
             WheelZoomSettings.Role.JOYSTICK -> R.string.wheel_key_role_joystick
             else -> error("no assign label for $role")
-        }), key?.toString() ?: settings.getString(R.string.wheel_key_none))
+        }), settings.getString(when {
+            WheelZoomSettings.assigned(settings, role) -> R.string.vehicle_map_key_saved
+            key == null -> R.string.wheel_key_none
+            else -> R.string.vehicle_map_key_default
+        }))
 
     private fun assignButton(role: WheelZoomSettings.Role) = views(wheelControls()).filterIsInstance<android.widget.Button>()
         .single { it.text.toString() == assignText(role, WheelZoomSettings.key(settings, role)) }

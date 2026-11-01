@@ -3,7 +3,7 @@ package com.shilapi.xcertplay.airplay
 import android.media.AudioTrack
 import android.os.SystemClock
 import com.shilapi.xcertplay.media.AudioChannelMapper
-import com.shilapi.xcertplay.media.AudioFocusCoordinator
+import com.shilapi.xcertplay.media.audioRendererFixture
 import com.shilapi.xcertplay.media.MediaAudioBuffer
 import com.shilapi.xcertplay.media.MediaClockTrim
 import java.io.DataOutputStream
@@ -112,9 +112,7 @@ class BufferedMusicClockTrimTest {
 
     private class RendererWithModelledDecoder(format: AudioFormat, startMs: Int, drift: Double, reports: MutableList<String>) {
         private val type = Class.forName("com.shilapi.xcertplay.media.AudioRenderer")
-        private val renderer = type.declaredConstructors.single { it.parameterCount == 13 }.apply { isAccessible = true }
-            .newInstance(format, false, false, 0, 0, AudioFocusCoordinator(null, false), 0, startMs,
-                { line: String -> reports += line }, 0L, false, null, false)
+        private val renderer = audioRendererFixture(format, startMs, { line: String -> reports += line })
         private val createdMs = SystemClock.uptimeMillis()
         private val packets: LinkedBlockingQueue<*>
         private val track: AudioTrack

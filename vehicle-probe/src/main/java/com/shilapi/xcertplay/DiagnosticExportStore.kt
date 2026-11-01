@@ -1,4 +1,4 @@
-package com.shilapi.xcertplay
+package com.shilapi.xcertplay.vehicleprobe
 
 import android.content.ContentResolver
 import android.content.ContentValues

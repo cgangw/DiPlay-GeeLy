@@ -165,6 +165,7 @@ class CarPlayNoPictureTest {
             ClassParameter.from(Int::class.javaPrimitiveType, 1280),
             ClassParameter.from(Int::class.javaPrimitiveType, 720),
             ClassParameter.from(Int::class.javaPrimitiveType, ReflectionHelpers.getField<Int>(host, "restartGeneration")),
+            ClassParameter.from(Int::class.javaPrimitiveType, 60),
         )
         sinks += sink
         ReflectionHelpers.setField(host, "sink", sink)

@@ -18,7 +18,6 @@ import android.util.Log
 import java.io.File
 import java.io.InputStream
 import java.util.concurrent.Executors
-import com.shilapi.xcertplay.DiagnosticExportStore
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale

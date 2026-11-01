@@ -74,6 +74,20 @@ class ManualHotspotManager(
         }
         require(timeoutMillis > 0) { "timeoutMillis must be positive" }
 
+        val readConfiguration = readApConfiguration()
+        val companion = readConfiguration != null &&
+            isFiveGhzCompanion(apSsid = readConfiguration.ssid, expectedSsid = expectedSsid)
+        if (readConfiguration != null && readConfiguration.ssid != expectedSsid && !companion) {
+            throw detailsDiffer(
+                "Manual hotspot SSID does not match the active local AP configuration: " +
+                    "'${readConfiguration.ssid}'",
+            )
+        }
+        // The Android configuration describes the 2.4 GHz network, so its channel, band and
+        // frequency say nothing about the companion; only its security carries over.
+        if (companion) onDiagnostic("Manual hotspot uses the car's 5 GHz companion network of the configured hotspot")
+        validateApConfiguration(if (companion) null else readConfiguration)
+
         // 只在候选证据变化时记录，避免每 250ms 重复输出。
         val selected = ManualHotspotReadiness(
             sample = {
@@ -100,21 +114,8 @@ class ManualHotspotManager(
             }
         }
         val factoryRoute = selected.factoryRoute
-        val readConfiguration = readApConfiguration()
-        val companion = readConfiguration != null &&
-            isFiveGhzCompanion(apSsid = readConfiguration.ssid, expectedSsid = expectedSsid)
-        if (readConfiguration != null && readConfiguration.ssid != expectedSsid && !companion && !factoryRoute) {
-            throw detailsDiffer(
-                "Manual hotspot SSID does not match the active local AP configuration: " +
-                    "'${readConfiguration.ssid}'",
-            )
-        }
-        // The Android configuration describes the 2.4 GHz network, so its channel, band and
-        // frequency say nothing about the companion; only its security carries over.
         // The separate factory AP must not inherit the other Android AP's SSID or security.
         val apConfiguration = if (factoryRoute || companion) null else readConfiguration
-        if (companion) onDiagnostic("Manual hotspot uses the car's 5 GHz companion network of the configured hotspot")
-        validateApConfiguration(apConfiguration)
         confirmed = selected
         onDiagnostic("hotspot interface confirmed iface=${selected.name} index=${selected.index} atNs=${System.nanoTime()}")
         val network = NetworkInterface.getByName(selected.name)

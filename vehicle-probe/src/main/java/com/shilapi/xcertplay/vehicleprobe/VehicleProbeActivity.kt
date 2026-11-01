@@ -29,7 +29,6 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.concurrent.Executors
-import com.shilapi.xcertplay.DiagnosticExportStore
 import com.shilapi.xcertplay.EXTRA_HIDE_TOP_BAR
 import com.shilapi.xcertplay.EXTRA_HIDE_BOTTOM_BAR
 import com.shilapi.xcertplay.applyVehicleSystemBars
