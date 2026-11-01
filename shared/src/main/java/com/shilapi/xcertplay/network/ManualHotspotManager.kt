@@ -1,4 +1,4 @@
-package com.shilapi.xcertplay.network
+﻿package com.shilapi.xcertplay.network
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -74,21 +74,6 @@ class ManualHotspotManager(
         }
         require(timeoutMillis > 0) { "timeoutMillis must be positive" }
 
-        val readConfiguration = readApConfiguration()
-        val companion = readConfiguration != null &&
-            isFiveGhzCompanion(apSsid = readConfiguration.ssid, expectedSsid = expectedSsid)
-        if (readConfiguration != null && readConfiguration.ssid != expectedSsid && !companion) {
-            throw detailsDiffer(
-                "Manual hotspot SSID does not match the active local AP configuration: " +
-                    "'${readConfiguration.ssid}'",
-            )
-        }
-        // The Android configuration describes the 2.4 GHz network, so its channel, band and
-        // frequency say nothing about the companion; only its security carries over.
-        val apConfiguration = if (companion) null else readConfiguration
-        if (companion) onDiagnostic("Manual hotspot uses the car's 5 GHz companion network of the configured hotspot")
-        validateApConfiguration(apConfiguration)
-
         // 只在候选证据变化时记录，避免每 250ms 重复输出。
         val selected = ManualHotspotReadiness(
             sample = {
@@ -105,16 +90,40 @@ class ManualHotspotManager(
             pause = { millis -> synchronized(waitLock) { if (!closed && !isCancelled()) waitLock.wait(millis) } },
             log = {},
             configuredInterface = preferredInterface,
-        ).await(timeoutMillis)
+        ).let { readiness ->
+            try {
+                readiness.await(timeoutMillis)
+            } catch (failure: WirelessStartupException) {
+                // carlito | Preserve the failure category while exposing factory state/path separately.
+                onDiagnostic("manual hotspot readiness failed ${interfaces.vendorDiagnosticSnapshot()}")
+                throw failure
+            }
+        }
+        val factoryRoute = selected.factoryRoute
+        val readConfiguration = readApConfiguration()
+        val companion = readConfiguration != null &&
+            isFiveGhzCompanion(apSsid = readConfiguration.ssid, expectedSsid = expectedSsid)
+        if (readConfiguration != null && readConfiguration.ssid != expectedSsid && !companion && !factoryRoute) {
+            throw detailsDiffer(
+                "Manual hotspot SSID does not match the active local AP configuration: " +
+                    "'${readConfiguration.ssid}'",
+            )
+        }
+        // The Android configuration describes the 2.4 GHz network, so its channel, band and
+        // frequency say nothing about the companion; only its security carries over.
+        // The separate factory AP must not inherit the other Android AP's SSID or security.
+        val apConfiguration = if (factoryRoute || companion) null else readConfiguration
+        if (companion) onDiagnostic("Manual hotspot uses the car's 5 GHz companion network of the configured hotspot")
+        validateApConfiguration(apConfiguration)
         confirmed = selected
         onDiagnostic("hotspot interface confirmed iface=${selected.name} index=${selected.index} atNs=${System.nanoTime()}")
         val network = NetworkInterface.getByName(selected.name)
         val localInterface = LocalHotspotInterface(selected.name, selected.address,
-            runCatching { network?.hardwareAddress?.toMacAddressString() }.getOrNull()
+            if (factoryRoute) null else (runCatching { network?.hardwareAddress?.toMacAddressString() }.getOrNull()
                 ?.takeUnless { it == "02:00:00:00:00:00" || it == "00:00:00:00:00:00" }
-                ?: HotspotInterfaceBssid.read(selected.name))
-        val connectionFrequency = if (companion) null else frequencyFromConnectionInfo()
-        val scanFrequency = if (companion) null else frequencyFromScanResult(localInterface)
+                ?: HotspotInterfaceBssid.read(selected.name)))
+        val connectionFrequency = if (factoryRoute || companion) null else frequencyFromConnectionInfo()
+        val scanFrequency = if (factoryRoute || companion) null else frequencyFromScanResult(localInterface)
         val channel = observedManualHotspotChannel(
             apChannel = apConfiguration?.channel ?: 0,
             connectionFrequencyMHz = connectionFrequency,
@@ -130,11 +139,14 @@ class ManualHotspotManager(
         val security = readConfiguration?.security ?: expectedSecurity
         // Keep the existing IPv4-first endpoint selection and also publish the selected AP's
         // scoped IPv6 address, using the same dual-stack policy as existing Wi-Fi connections.
-        val hostAddresses = network?.let {
+        // carlito | For the factory route, discovery, invitations and iAP2 must use one AP address.
+        val hostAddresses = if (factoryRoute) listOfNotNull(localInterface.hostAddress) else network?.let {
             existingWifiHostAddresses(Collections.list(it.inetAddresses), selected.index)
         }?.takeIf { it.isNotEmpty() } ?: listOfNotNull(localInterface.hostAddress)
         onDiagnostic("Manual hotspot configReadable=${readConfiguration != null} " +
             "security=$security channelKnown=${channel > 0} " +
+            "credentialsSource=saved addressPolicy=primary " +
+            "networkSource=${if (factoryRoute) "ecarx_client_route" else "android_ap"} " +
             "hardwareAddressKnown=${localInterface.hardwareAddress != null} iface=${localInterface.name} " +
             "family=${if (localInterface.hostAddress is Inet6Address) "IPv6" else "IPv4"} " +
             "mdnsFamilies=${hostAddresses.joinToString("+") { address -> if (address is Inet6Address) "IPv6" else "IPv4" }}")
@@ -187,6 +199,8 @@ class ManualHotspotManager(
         synchronized(waitLock) { waitLock.notifyAll() }
         interfaces.close()
     }
+
+    override fun connectionDiagnosticSnapshot(): String = interfaces.vendorDiagnosticSnapshot()
 
     private fun validateApConfiguration(configuration: ManualApConfiguration?) {
         configuration ?: return

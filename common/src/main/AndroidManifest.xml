@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <!-- Independent system-log discovery uses the existing local connection to request access. -->
+    <uses-permission android:name="android.permission.READ_LOGS" tools:ignore="ProtectedPermissions" />
     <!-- Optional, user-authorized startup of the car's own hotspot. -->
     <uses-permission android:name="android.permission.WRITE_SETTINGS" />
 
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
     <!-- Optional, user-authorized installation of a released update APK. -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />
@@ -21,6 +25,9 @@
     <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" tools:ignore="ProtectedPermissions" />
     <!-- The centre card also follows whichever launcher is the default home. -->
     <queries>
+        <package android:name="com.autolink.carplay" />
+        <package android:name="com.autolink.carplay.app" />
+        <package android:name="com.geely.service.oneosapi" />
         <package android:name="com.byd.carsettings" />
         <intent>
             <action android:name="android.intent.action.VIEW" />
@@ -36,6 +43,18 @@
         </intent>
     </queries>
     <application>
+        <!-- tianwen | Generic instrument map viewport settings. -->
+        <activity android:name="com.shilapi.xcertplay.VehicleMapProjectionActivity" android:exported="false"
+            android:resizeableActivity="true" android:theme="@style/Theme.Xcertplay" />
+        <!-- tianwen | Local draft editor; not exposed to other applications. -->
+        <activity android:name="com.shilapi.xcertplay.GeelyProjectionEditorActivity"
+            android:exported="false" android:resizeableActivity="true"
+            android:theme="@style/Theme.Xcertplay" android:windowSoftInputMode="adjustResize" />
+        <activity android:name="com.shilapi.xcertplay.SteeringControlsActivity"
+            android:exported="false" android:theme="@style/Theme.Xcertplay"
+            android:windowSoftInputMode="adjustResize" />
+        <service android:name="com.shilapi.xcertplay.SteeringProfileUploadService"
+            android:exported="true" android:permission="android.permission.BIND_JOB_SERVICE" />
         <provider
             android:name="com.shilapi.xcertplay.CrashRecordInstaller"
             android:authorities="${applicationId}.crash-record"
@@ -69,7 +88,7 @@
             </intent-filter>
         </activity>
         <service android:name="com.shilapi.xcertplay.DiPlaySessionService"
-            android:exported="false" android:foregroundServiceType="connectedDevice|microphone|location" />
+            android:exported="false" android:foregroundServiceType="connectedDevice|microphone|location|mediaPlayback" />
 
         <activity
             android:name="com.shilapi.xcertplay.CarPlayHostActivity"

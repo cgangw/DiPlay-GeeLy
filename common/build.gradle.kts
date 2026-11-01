@@ -33,6 +33,8 @@ android {
 
 dependencies {
     api(project(":shared"))
+    // tianwen | Vehicle scanning and report imports.
+    implementation(project(":vehicle-probe"))
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.material3)
