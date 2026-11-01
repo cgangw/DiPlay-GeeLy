@@ -1,4 +1,4 @@
-package com.shilapi.xcertplay
+﻿package com.shilapi.xcertplay
 
 import com.shilapi.xcertplay.media.CarPlayVideoLayout
 import kotlin.math.roundToInt

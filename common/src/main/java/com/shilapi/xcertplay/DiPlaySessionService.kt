@@ -1,4 +1,4 @@
-package com.shilapi.xcertplay
+﻿package com.shilapi.xcertplay
 
 import android.Manifest
 import android.app.Notification
@@ -24,7 +24,7 @@ class DiPlaySessionService : Service() {
         }
         val builder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val manager = getSystemService(NotificationManager::class.java)
-            manager.createNotificationChannel(NotificationChannel(CHANNEL, "CarPlay connection", NotificationManager.IMPORTANCE_LOW))
+            manager.createNotificationChannel(NotificationChannel(CHANNEL, getString(R.string.connection_notification_channel), NotificationManager.IMPORTANCE_LOW))
             Notification.Builder(this, CHANNEL)
         } else {
             // Android 7.x has no notification channels; the priority stands in for the channel importance.
@@ -36,11 +36,12 @@ class DiPlaySessionService : Service() {
         val notification = builder
             .setSmallIcon(R.drawable.ic_diplay_notification)
             .setContentTitle("DiPlay")
-            .setContentText("CarPlay connection running")
+            .setContentText(getString(R.string.connection_notification_running))
             .setContentIntent(open).setOngoing(true)
-            .addAction(Notification.Action.Builder(null, "Disconnect", stop).build()).build()
+            .addAction(Notification.Action.Builder(null, getString(R.string.connection_notification_disconnect), stop).build()).build()
         if (Build.VERSION.SDK_INT >= 29) {
-            var types = ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE
+            // carlito | Android 15+ requires an active playback service for background audio focus.
+            var types = ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE or ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
             if (Build.VERSION.SDK_INT >= 30 && checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
                 types = types or ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE
             }

@@ -1,7 +1,8 @@
-package com.shilapi.xcertplay
+﻿package com.shilapi.xcertplay
 
 import android.content.Context
 import android.os.Build
+import android.util.AtomicFile
 import com.shilapi.xcertplay.airplay.AirPlayDisplaySettings
 import com.shilapi.xcertplay.airplay.AirPlayPhysicalSizeBasis
 import com.shilapi.xcertplay.airplay.CarPlayDisplayScale
@@ -19,6 +20,8 @@ import com.shilapi.xcertplay.orchestration.MfiTarget
 import com.shilapi.xcertplay.orchestration.WirelessHotspotMode
 import com.shilapi.xcertplay.network.WifiP2pChannels
 import com.shilapi.xcertplay.transport.LockdownPairRecord
+import com.shilapi.xcertplay.vehicle.GeelyFactoryCarPlay
+import com.shilapi.xcertplay.media.AudioOutputDevice
 import java.io.File
 
 /** SharedPreferences persistence for the accessory identity and paired controllers. */
@@ -43,7 +46,8 @@ object AirPlayPersistence {
     private const val KEY_UI_SCALE_PERCENT = "ui_scale_percent"
     private const val KEY_HEVC_ENABLED = "hevc_enabled"
     private const val KEY_HEVC_SOFTWARE_DECODER = "hevc_software_decoder"
-    private const val KEY_ADVANCED_AUDIO_CHANNEL_MAPPING = "advanced_audio_channel_mapping"
+    // Reset the old mobile build's saved `false` after enabling car audio routing by default.
+    private const val KEY_ADVANCED_AUDIO_CHANNEL_MAPPING = "advanced_audio_channel_mapping_v2"
     private const val KEY_AUDIO_FOCUS_ENABLED = "audio_focus_enabled"
     private const val KEY_AUDIO_FOCUS_AUTO_YIELD = "audio_focus_auto_yield"
     private const val KEY_NAVIGATION_PROMPT_AUDIO_FOCUS = "navigation_prompt_audio_focus"
@@ -95,6 +99,11 @@ object AirPlayPersistence {
      * kept on disk and handed back by the next run ([GeelyClusterProjection.releaseStale]).
      */
     private const val KEY_CLUSTER_PROJECTION_HELD = "geely_cluster_projection_held"
+    private const val KEY_GEELY_HUD_ENABLED = "geely_hud_enabled"
+    private const val KEY_GEELY_HUD_DISPLAY_ID = "geely_hud_display_id"
+    private const val KEY_GEELY_HUD_DISPLAY_NAME = "geely_hud_display_name"
+    private const val KEY_GEELY_HUD_SCALE_PERCENT = "geely_hud_scale_percent"
+    private const val KEY_GEELY_STEERING_ENABLED = "geely_steering_enabled"
     private const val KEY_ADB_CLUSTER_ACTIVITY = "adb_cluster_activity_enabled"
     private const val KEY_CENTER_MAP_OVERLAY = "center_map_overlay"
     private const val KEY_CENTER_MAP_AUTO_HIDE = "center_map_auto_hide"
@@ -144,7 +153,7 @@ object AirPlayPersistence {
 
     const val DEFAULT_MANUFACTURER = "DiPlay"
     const val DEFAULT_MODEL = "DiPlay"
-    const val DEFAULT_OEM_LABEL = "BYD"
+    const val DEFAULT_OEM_LABEL = "吉利"
     const val DEFAULT_MFI_I2C_PATH = "/dev/i2c-1"
 
     fun loadAmbientDelaySeconds(context: Context): Int =
@@ -229,7 +238,7 @@ object AirPlayPersistence {
 
     fun loadAdvancedAudioChannelMapping(context: Context): Boolean =
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-            .getBoolean(KEY_ADVANCED_AUDIO_CHANNEL_MAPPING, false)
+            .getBoolean(KEY_ADVANCED_AUDIO_CHANNEL_MAPPING, true)
 
     fun saveAdvancedAudioChannelMapping(context: Context, enabled: Boolean) {
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
@@ -249,7 +258,7 @@ object AirPlayPersistence {
 
     fun loadAudioFocusEnabled(context: Context): Boolean =
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-            .getBoolean(KEY_AUDIO_FOCUS_ENABLED, false)
+            .getBoolean(KEY_AUDIO_FOCUS_ENABLED, true)
 
     fun saveAudioFocusEnabled(context: Context, enabled: Boolean) {
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
@@ -302,8 +311,12 @@ object AirPlayPersistence {
 
     fun loadNavigationAudioChannel(context: Context): Int {
         val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-        // Inherit the legacy value only when the new key is absent; preserve fresh-install and explicit 0 defaults.
-        return prefs.getInt(KEY_NAVIGATION_AUDIO_CHANNEL, prefs.getInt(KEY_NAVIGATION_STREAM_TYPE, 0))
+        // The factory receiver routes navigation by usage, not a universal stream number.
+        // Inherit an explicitly saved legacy choice only when the new key is absent.
+        return prefs.getInt(
+            KEY_NAVIGATION_AUDIO_CHANNEL,
+            prefs.getInt(KEY_NAVIGATION_STREAM_TYPE, 0),
+        )
             .takeIf { it in AUDIO_CHANNELS } ?: 0
     }
 
@@ -335,6 +348,15 @@ object AirPlayPersistence {
             .putInt(KEY_NAVIGATION_AUDIO_CHANNEL, channel)
             .apply()
         return true
+    }
+
+    fun loadNavigationOutputDevice(context: Context): AudioOutputDevice? = AudioOutputDevice.decode(
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString("navigation_output_device", null),
+    )
+
+    fun saveNavigationOutputDevice(context: Context, device: AudioOutputDevice?) {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
+            .putString("navigation_output_device", device?.encode()).apply()
     }
 
     fun loadWirelessEnabled(context: Context): Boolean =
@@ -609,7 +631,7 @@ object AirPlayPersistence {
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
             .getString(KEY_MANUFACTURER, null)
             ?.takeIf { it.isNotBlank() }
-            ?: DEFAULT_MANUFACTURER
+            ?: GeelyFactoryCarPlay.load(context)?.manufacturer ?: DEFAULT_MANUFACTURER
 
     fun saveManufacturer(context: Context, manufacturer: String) {
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
@@ -621,7 +643,7 @@ object AirPlayPersistence {
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
             .getString(KEY_MODEL, null)
             ?.takeIf { it.isNotBlank() }
-            ?: DEFAULT_MODEL
+            ?: GeelyFactoryCarPlay.load(context)?.model ?: DEFAULT_MODEL
 
     fun saveModel(context: Context, model: String) {
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
@@ -629,11 +651,13 @@ object AirPlayPersistence {
             .apply()
     }
 
-    fun loadOemLabel(context: Context): String =
-        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-            .getString(KEY_OEM_LABEL, DEFAULT_OEM_LABEL)
-            // iOS hides the car icon without a label.
-            .orEmpty().ifBlank { DEFAULT_OEM_LABEL }
+    fun loadOemLabel(context: Context): String {
+        val stored = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(KEY_OEM_LABEL, null)
+        // carlito | Migrate previously persisted brand defaults; keep other custom names.
+        return stored?.takeUnless {
+            it.isBlank() || it.equals("BYD", ignoreCase = true) || it.equals("Geely", ignoreCase = true)
+        } ?: DEFAULT_OEM_LABEL
+    }
 
     fun saveOemLabel(context: Context, oemLabel: String) {
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
@@ -902,6 +926,59 @@ object AirPlayPersistence {
 
     fun saveClusterProjectionHeld(context: Context, held: Boolean) {
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putBoolean(KEY_CLUSTER_PROJECTION_HELD, held).apply()
+    }
+
+    fun loadGeelyHudEnabled(context: Context): Boolean =
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getBoolean(KEY_GEELY_HUD_ENABLED, false)
+
+    fun saveGeelyHudEnabled(context: Context, enabled: Boolean) {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
+            .putBoolean(KEY_GEELY_HUD_ENABLED, enabled)
+            .apply()
+    }
+
+    fun loadGeelyHudDisplayId(context: Context): Int =
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+            .getInt(KEY_GEELY_HUD_DISPLAY_ID, android.view.Display.INVALID_DISPLAY)
+
+    fun loadGeelyHudDisplayName(context: Context): String? =
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+            .getString(KEY_GEELY_HUD_DISPLAY_NAME, null)
+            ?.takeIf { it.isNotBlank() }
+
+    fun saveGeelyHudDisplay(context: Context, displayId: Int, displayName: String?) {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
+            .putInt(KEY_GEELY_HUD_DISPLAY_ID, displayId)
+            .apply {
+                if (displayName.isNullOrBlank()) remove(KEY_GEELY_HUD_DISPLAY_NAME)
+                else putString(KEY_GEELY_HUD_DISPLAY_NAME, displayName)
+            }
+            .apply()
+    }
+
+    fun loadGeelyHudScalePercent(context: Context): Int =
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+            .getInt(KEY_GEELY_HUD_SCALE_PERCENT, 85)
+            .takeIf { it in geelyHudScalePercents } ?: 85
+
+    fun saveGeelyHudScalePercent(context: Context, percent: Int) {
+        require(percent in geelyHudScalePercents)
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
+            .putInt(KEY_GEELY_HUD_SCALE_PERCENT, percent)
+            .apply()
+    }
+
+    val geelyHudScalePercents = listOf(70, 85, 100)
+
+    fun loadGeelySteeringEnabled(context: Context): Boolean =
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+            .getBoolean(KEY_GEELY_STEERING_ENABLED,
+                com.shilapi.xcertplay.vehicleprobe.VehicleSteeringClient.installed(context) || GeelySteeringKeyCodes.enabledByDefault())
+
+    fun saveGeelySteeringEnabled(context: Context, enabled: Boolean) {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
+            .putBoolean(KEY_GEELY_STEERING_ENABLED, enabled)
+            .apply()
     }
 
     /** The dashboard map as a card on the centre screen while DiPlay is in the background. */
@@ -1514,18 +1591,27 @@ object AirPlayPersistence {
         if (commit) editor.commit() else editor.apply()
     }
 
-    fun loadCustomAirPlayIconFile(context: Context): File? =
-        File(context.filesDir, CUSTOM_ICON_FILE).takeIf { it.isFile }
+    fun loadCustomAirPlayIconFile(context: Context): File? {
+        val file = File(context.filesDir, CUSTOM_ICON_FILE)
+        runCatching { AtomicFile(file).openRead().use { } }
+        return file.takeIf { it.isFile }
+    }
 
     fun saveCustomAirPlayIcon(context: Context, encodedImage: ByteArray) {
         require(encodedImage.isNotEmpty()) { "AirPlay icon data must not be empty" }
-        File(context.filesDir, CUSTOM_ICON_FILE).outputStream().use { output ->
+        val file = AtomicFile(File(context.filesDir, CUSTOM_ICON_FILE))
+        val output = file.startWrite()
+        try {
             output.write(encodedImage)
+            file.finishWrite(output)
+        } catch (error: Exception) {
+            file.failWrite(output)
+            throw error
         }
     }
 
     fun clearCustomAirPlayIcon(context: Context) {
-        File(context.filesDir, CUSTOM_ICON_FILE).delete()
+        AtomicFile(File(context.filesDir, CUSTOM_ICON_FILE)).delete()
     }
 
     fun loadIdentity(context: Context): AirPlayIdentity {

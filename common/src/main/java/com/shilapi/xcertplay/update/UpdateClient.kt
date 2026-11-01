@@ -1,4 +1,4 @@
-package com.shilapi.xcertplay.update
+﻿package com.shilapi.xcertplay.update
 
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -10,7 +10,8 @@ import java.net.URLConnection
 
 internal object UpdateClient {
     internal const val RELEASES_URL =
-        "https://api.github.com/repos/shihabal3amri/DiPlay/releases?per_page=3"
+        // carlito | Update the installed Geely fork, preserving its signing identity and features.
+        "https://api.github.com/repos/carlito12345/DiPlay/releases?per_page=3"
     private const val CONNECT_TIMEOUT_MILLIS = 10_000
     private const val READ_TIMEOUT_MILLIS = 30_000
     // Far above the release APKs (under 20 MB at v0.2.21). It stops a body that never ends.
