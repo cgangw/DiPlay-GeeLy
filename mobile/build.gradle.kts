@@ -7,6 +7,9 @@ plugins {
 val localAuthenticationAssets = providers.environmentVariable("DIPLAY_AUTH_ASSETS_DIR")
     .orNull?.let { file(it).canonicalFile }
 
+// tianwen | Build the Geely package under a name that is distinguishable from the upstream build.
+val geelyVersionName = "0.2.22"
+
 android {
     namespace = "com.shilapi.xcertplay"
     compileSdk {
@@ -18,7 +21,7 @@ android {
         minSdk = 24
         targetSdk = 37
         versionCode = 41
-        versionName = "0.2.22"
+        versionName = geelyVersionName
 
     }
 
@@ -55,6 +58,16 @@ android {
     }
     buildFeatures {
         compose = true
+    }
+}
+
+// tianwen | Always publish the APK as Diplay-GeeLy-v<version>[-hud-test].apk.
+androidComponents {
+    onVariants { variant ->
+        val suffix = if (variant.buildType == "debug") "-hud-test" else ""
+        variant.outputs.forEach { output ->
+            output.outputFileName.set("Diplay-GeeLy-v$geelyVersionName$suffix.apk")
+        }
     }
 }
 
