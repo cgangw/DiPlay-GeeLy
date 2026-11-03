@@ -4,7 +4,18 @@
 
 为兼容的比亚迪安卓车机提供有线及无线 CarPlay，采用 DiAuto 风格界面。
 
-> 这些项目专注于比亚迪汽车。它们可能在其他品牌上运行，但其他品牌不在支持范围内，也没有增加支持或修复其品牌特定兼容性问题的计划。
+> **本仓库是 DiPlay 的吉利车机适配版本。**
+> 基于 [shihabal3amri/DiPlay](https://github.com/shihabal3amri/DiPlay) v0.2.22，分支 `tianwen_dev`。它不是上游的比亚迪版本，上游作者不提供支持。
+>
+> 已在**吉利星越L（KX11，2025 款揽星）**实车验证安装并运行；其他吉利车型、车机及固件版本尚未验证。
+>
+> 吉利相关新增：ECARX 原厂热点处理、吉利方向盘按键映射与按键识别、HUD／仪表导航投屏及可编辑布局、全屏地图投至仪表、吉利音频路由，以及用于读取原厂车辆属性的 `vehicle-probe` 桥接。
+>
+> 构建说明：产物名为 `Diplay-GeeLy-v<版本>.apk`（debug 为 `…-hud-test.apk`）。CarPlay 配件身份文件（`offline-mfi/identity.pk8`、`certificate.p7b`）与 release 签名密钥不在仓库内，需要本地自备。本项目仍非 Apple 认证产品，内置身份为实验性身份。
+>
+> 同步上游：`git fetch upstream && git merge upstream/main`。
+
+> 这些项目专注于比亚迪汽车。它们可能在其他品牌上运行，但其他品牌不在支持范围内，也没有增加支持或修复其品牌特定兼容性问题的计划。本分支的吉利适配见上方说明。
 
 [下载与中文网站](https://shihabal3amri.github.io/DiPlay/zh-Hans/) · [0.2.22 版本](https://github.com/shihabal3amri/DiPlay/releases/tag/v0.2.22) · [完整说明](README.md) · [报告问题](https://github.com/shihabal3amri/DiPlay/issues/new/choose)
 

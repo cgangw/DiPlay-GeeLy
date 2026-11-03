@@ -4,7 +4,19 @@
 
 **CarPlay for compatible BYD Android head units.** Wired and wireless, with the familiar DiAuto interface. Independent app: `com.shihab.diplay`.
 
-> **BYD support scope:** These projects focus on BYD cars. They may work on other brands, but other brands are unsupported and there are no plans to add support or fix brand-specific incompatibilities.
+> **This repository is a Geely (吉利) adaptation of DiPlay.**
+> Based on [shihabal3amri/DiPlay](https://github.com/shihabal3amri/DiPlay) v0.2.22, branch `tianwen_dev`.
+> It is not the upstream BYD build and is not supported by the upstream author.
+>
+> Verified installed and running on a **Geely Xingyue L (KX11, 2025 Lanxing trim)**. Other Geely models, head units and firmware versions are untested.
+>
+> Geely-specific additions: factory ECARX hotspot handling, Geely steering-wheel key mapping and learning, HUD/cluster navigation projection with an editable layout, full-map projection to the cluster, Geely audio routing, and a `vehicle-probe` bridge for factory vehicle properties.
+>
+> Build notes: output APK is `Diplay-GeeLy-v<version>.apk` (debug: `…-hud-test.apk`). The CarPlay accessory identity (`offline-mfi/identity.pk8`, `certificate.p7b`) and the release keystore are not in the repository and must be supplied locally. Still not an Apple-certified product; the bundled identity is experimental.
+>
+> Sync upstream with `git fetch upstream && git merge upstream/main`.
+
+> **BYD support scope:** These projects focus on BYD cars. They may work on other brands, but other brands are unsupported and there are no plans to add support or fix brand-specific incompatibilities. This branch's Geely adaptation is described above.
 
 [Download & website](https://shihabal3amri.github.io/DiPlay/) · [Release](https://github.com/shihabal3amri/DiPlay/releases/tag/v0.2.22) · [Report a problem](https://github.com/shihabal3amri/DiPlay/issues/new/choose)
 
