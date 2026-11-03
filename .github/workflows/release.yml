@@ -1,0 +1,75 @@
+name: Geely release package
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      KEYSTORE_B64: ${{ secrets.KEYSTORE_B64 }}
+      ANDROID_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+      ANDROID_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+      ANDROID_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+      MFI_IDENTITY_PK8_B64: ${{ secrets.MFI_IDENTITY_PK8_B64 }}
+      MFI_CERT_P7B_B64: ${{ secrets.MFI_CERT_P7B_B64 }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reject credential files in source
+        run: python3 scripts/check_public_tree.py
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools platforms;android-37.0 build-tools;36.0.0 ndk;28.2.13676358
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Provision signing key and CarPlay identity
+        run: |
+          set -euo pipefail
+          missing=""
+          for name in KEYSTORE_B64 MFI_IDENTITY_PK8_B64 MFI_CERT_P7B_B64; do
+            if [ -z "${!name}" ]; then missing="$missing $name"; fi
+          done
+          if [ -n "$missing" ]; then
+            echo "::error::Missing repository secrets:$missing"
+            exit 1
+          fi
+          keystore="$RUNNER_TEMP/tianwen-release.jks"
+          printf '%s' "$KEYSTORE_B64" | base64 -d > "$keystore"
+          install -d "$RUNNER_TEMP/auth/offline-mfi"
+          printf '%s' "$MFI_IDENTITY_PK8_B64" | base64 -d > "$RUNNER_TEMP/auth/offline-mfi/identity.pk8"
+          printf '%s' "$MFI_CERT_P7B_B64" | base64 -d > "$RUNNER_TEMP/auth/offline-mfi/certificate.p7b"
+          test -s "$keystore"
+          test -s "$RUNNER_TEMP/auth/offline-mfi/identity.pk8"
+          test -s "$RUNNER_TEMP/auth/offline-mfi/certificate.p7b"
+          echo "ANDROID_KEYSTORE_PATH=$keystore" >> "$GITHUB_ENV"
+          echo "DIPLAY_AUTH_ASSETS_DIR=$RUNNER_TEMP/auth" >> "$GITHUB_ENV"
+      - name: Build signed Geely release APK
+        run: ./gradlew :mobile:assembleRelease --stacktrace
+      - name: Verify signature and bundled identity
+        run: |
+          set -euo pipefail
+          apk=$(ls mobile/build/outputs/apk/release/*.apk)
+          test -f "$apk"
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --print-certs "$apk"
+          unzip -l "$apk" | grep 'assets/offline-mfi/identity.pk8'
+          unzip -l "$apk" | grep 'assets/offline-mfi/certificate.p7b'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Diplay-GeeLy-release
+          path: mobile/build/outputs/apk/release/*.apk
+          if-no-files-found: error
+      - name: Publish GitHub release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: mobile/build/outputs/apk/release/*.apk
+          generate_release_notes: true
