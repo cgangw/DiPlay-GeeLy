@@ -246,7 +246,6 @@ internal class AudioFocusCoordinator(
             }
             return
         }
-        val navigation = active.values.any { it.channel == AudioChannel.NAVIGATION }
         active.forEach { (track, entry) ->
             if (!enabled || manager == null) {
                 runCatching { track.setVolume(if (entry.music && (nativeBluetoothPlaying || speechPlaying)) 0f else 1f) }
@@ -256,7 +255,6 @@ internal class AudioFocusCoordinator(
                 externalCall -> 0f
                 entry.music && (speechPlaying || nativeBluetoothPlaying || mediaSuppressed || mediaPlaying == false) -> 0f
                 requestedChannel in setOf(AudioChannel.PHONE, AudioChannel.ASSISTANT, AudioChannel.RINGTONE) && entry.channel != requestedChannel -> 0f
-                entry.music && navigation -> DUCKED_VOLUME
                 else -> 1f
             }
             runCatching { track.setVolume(focusVolume * local) }
