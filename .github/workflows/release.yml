@@ -52,24 +52,34 @@ jobs:
           test -s "$RUNNER_TEMP/auth/offline-mfi/certificate.p7b"
           echo "ANDROID_KEYSTORE_PATH=$keystore" >> "$GITHUB_ENV"
           echo "DIPLAY_AUTH_ASSETS_DIR=$RUNNER_TEMP/auth" >> "$GITHUB_ENV"
-      - name: Build signed Geely release APK
-        run: ./gradlew :mobile:assembleRelease --stacktrace
+      - name: Build signed Geely release APK and vehicle bridge
+        run: ./gradlew :mobile:assembleRelease :vehicle-bridge:assembleRelease --stacktrace
       - name: Verify signature and bundled identity
         run: |
           set -euo pipefail
           apk=$(ls mobile/build/outputs/apk/release/*.apk)
+          bridge=$(ls vehicle-bridge/build/outputs/apk/release/*.apk)
           test -f "$apk"
+          test -f "$bridge"
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --print-certs "$apk"
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --print-certs "$bridge"
+          # Both packages must share one certificate, or the bridge cannot be upgraded in place.
+          expr "$("$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --print-certs "$apk" | grep 'SHA-256 digest')" \
+            = "$("$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --print-certs "$bridge" | grep 'SHA-256 digest')"
           unzip -l "$apk" | grep 'assets/offline-mfi/identity.pk8'
           unzip -l "$apk" | grep 'assets/offline-mfi/certificate.p7b'
       - uses: actions/upload-artifact@v4
         with:
           name: Diplay-GeeLy-release
-          path: mobile/build/outputs/apk/release/*.apk
+          path: |
+            mobile/build/outputs/apk/release/*.apk
+            vehicle-bridge/build/outputs/apk/release/*.apk
           if-no-files-found: error
       - name: Publish GitHub release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: mobile/build/outputs/apk/release/*.apk
+          files: |
+            mobile/build/outputs/apk/release/*.apk
+            vehicle-bridge/build/outputs/apk/release/*.apk
           generate_release_notes: true

@@ -8,7 +8,7 @@ val localAuthenticationAssets = providers.environmentVariable("DIPLAY_AUTH_ASSET
     .orNull?.let { file(it).canonicalFile }
 
 // tianwen | Build the Geely package under a name that is distinguishable from the upstream build.
-val geelyVersionName = "0.2.22"
+val geelyVersionName = "0.2.22.1"
 
 android {
     namespace = "com.shilapi.xcertplay"

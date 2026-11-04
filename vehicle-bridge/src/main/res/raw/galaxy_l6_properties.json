@@ -1,0 +1,151 @@
+{
+  "schema": 1,
+  "author": "carlito",
+  "model": "银河 L6",
+  "bindings": [
+    {
+      "field": "SPEED",
+      "chain": "adapt_api",
+      "kind": "sensor",
+      "area": "global",
+      "propertyId": 1048832,
+      "name": "ISensor.SENSOR_TYPE_CAR_SPEED",
+      "origin": "com.ecarx.xui.adaptapi.car.sensor.ISensor",
+      "scale": 1.0,
+      "offset": 0.0,
+      "unit": "原始值"
+    },
+    {
+      "field": "RPM",
+      "chain": "ecarx_service",
+      "kind": "signal",
+      "area": "auto(1,0)",
+      "propertyId": 559971540,
+      "name": "CarSignalManager.SignalId_EngNSafeEngN",
+      "origin": "ecarx.car.hardware.signal.CarSignalManager",
+      "scale": 1.0,
+      "offset": 0.0,
+      "unit": "原始值"
+    },
+    {
+      "field": "ODOMETER",
+      "chain": "adapt_api",
+      "kind": "sensor",
+      "area": "global",
+      "propertyId": 1050368,
+      "name": "ISensor.SENSOR_TYPE_ODOMETER",
+      "origin": "com.ecarx.xui.adaptapi.car.sensor.ISensor",
+      "scale": 1.0,
+      "offset": 0.0,
+      "unit": "原始值"
+    },
+    {
+      "field": "RANGE",
+      "chain": "adapt_api",
+      "kind": "sensor",
+      "area": "global",
+      "propertyId": 1050624,
+      "name": "ISensor.SENSOR_TYPE_ENDURANCE_MILEAGE",
+      "origin": "com.ecarx.xui.adaptapi.car.sensor.ISensor",
+      "scale": 1.0,
+      "offset": 0.0,
+      "unit": "原始值"
+    },
+    {
+      "field": "BATTERY",
+      "chain": "adapt_api",
+      "kind": "sensor",
+      "area": "global",
+      "propertyId": 1051136,
+      "name": "ISensor.SENSOR_TYPE_EV_BATTERY_LEVEL",
+      "origin": "com.ecarx.xui.adaptapi.car.sensor.ISensor",
+      "scale": 1.0,
+      "offset": 0.0,
+      "unit": "原始值"
+    },
+    {
+      "field": "AMBIENT_TEMPERATURE",
+      "chain": "adapt_api",
+      "kind": "sensor",
+      "area": "global",
+      "propertyId": 1051392,
+      "name": "ISensor.SENSOR_TYPE_TEMPERATURE_AMBIENT",
+      "origin": "com.ecarx.xui.adaptapi.car.sensor.ISensor",
+      "scale": 1.0,
+      "offset": 0.0,
+      "unit": "原始值"
+    },
+    {
+      "field": "CABIN_TEMPERATURE",
+      "chain": "adapt_api",
+      "kind": "sensor",
+      "area": "global",
+      "propertyId": 1051648,
+      "name": "ISensor.SENSOR_TYPE_TEMPERATURE_INDOOR",
+      "origin": "com.ecarx.xui.adaptapi.car.sensor.ISensor",
+      "scale": 1.0,
+      "offset": 0.0,
+      "unit": "原始值"
+    },
+    {
+      "field": "HIGH_BEAM",
+      "chain": "ecarx_service",
+      "kind": "signal",
+      "area": "auto(1,0)",
+      "propertyId": 557873481,
+      "name": "CarSignalManager.SignalId_ExtrLtgStsHiBeam",
+      "origin": "ecarx.car.hardware.signal.CarSignalManager",
+      "scale": 1.0,
+      "offset": 0.0,
+      "unit": "原始值"
+    },
+    {
+      "field": "LOW_BEAM",
+      "chain": "ecarx_service",
+      "kind": "signal",
+      "area": "auto(1,0)",
+      "propertyId": 557873483,
+      "name": "CarSignalManager.SignalId_ExtrLtgStsLoBeam",
+      "origin": "ecarx.car.hardware.signal.CarSignalManager",
+      "scale": 1.0,
+      "offset": 0.0,
+      "unit": "原始值"
+    },
+    {
+      "field": "LEFT_INDICATOR",
+      "chain": "ecarx_service",
+      "kind": "signal",
+      "area": "auto(1,0)",
+      "propertyId": 557873490,
+      "name": "CarSignalManager.SignalId_ExtrLtgStsTurnIndrLe",
+      "origin": "ecarx.car.hardware.signal.CarSignalManager",
+      "scale": 1.0,
+      "offset": 0.0,
+      "unit": "原始值"
+    },
+    {
+      "field": "RIGHT_INDICATOR",
+      "chain": "ecarx_service",
+      "kind": "signal",
+      "area": "auto(1,0)",
+      "propertyId": 557873491,
+      "name": "CarSignalManager.SignalId_ExtrLtgStsTurnIndrRi",
+      "origin": "ecarx.car.hardware.signal.CarSignalManager",
+      "scale": 1.0,
+      "offset": 0.0,
+      "unit": "原始值"
+    },
+    {
+      "field": "STEERING_BUTTON",
+      "chain": "ecarx_service",
+      "kind": "signal",
+      "area": "auto(1,0)",
+      "propertyId": 557873368,
+      "name": "CarSignalManager.SignalId_SteerWhlBtnPsd",
+      "origin": "ecarx.car.hardware.signal.CarSignalManager",
+      "scale": 1.0,
+      "offset": 0.0,
+      "unit": "原始值"
+    }
+  ]
+}

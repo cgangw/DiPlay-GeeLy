@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- GD vehicle bridge: read-only vehicle property boundary for DiPlay. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <permission
+        android:name="com.geely.desktop.permission.VEHICLE_BRIDGE"
+        android:protectionLevel="signature" />
+    <permission
+        android:name="com.geely.desktop.permission.VEHICLE_PROPERTIES"
+        android:protectionLevel="normal" />
+
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="com.geely.desktop.permission.VEHICLE_BRIDGE" />
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+    <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" />
+    <uses-permission android:name="android.permission.CAR_CONTROL" />
+    <uses-permission android:name="android.car.permission.CAR_TIRES" />
+    <uses-permission android:name="geely.oneos.permission.SERVICE" />
+
+    <queries>
+        <package android:name="com.geely.settings" />
+        <package android:name="com.shihab.diplay" />
+        <package android:name="com.shihab.diplay.hudtest" />
+        <package android:name="com.geely.desktop" />
+        <package android:name="com.simplerbit.autoservice" />
+        <package android:name="com.geely.service.oneosapi" />
+        <package android:name="com.ecarx.car" />
+        <package android:name="com.ecarx.sdk.openapi" />
+        <package android:name="com.flyme.auto.hvac" />
+        <package android:name="com.baidu.che.codriver" />
+    </queries>
+
+    <application
+        android:allowBackup="false"
+        android:label="GEELY DESKTOP Vehicle Bridge"
+        android:theme="@style/Theme.VehicleBridge">
+
+        <meta-data
+            android:name="com.geely.desktop.vehicle.bridge.author"
+            android:value="carlito" />
+
+        <service
+            android:name="com.geely.desktop.vehicle.bridge.VehiclePropertiesService"
+            android:exported="true"
+            android:process=":vehicle_bridge"
+            android:stopWithTask="false" />
+
+        <!-- Legacy internal boundary; kept for installed clients that still bind by action. -->
+        <service
+            android:name="com.geely.desktop.vehicle.bridge.VehicleBridgeService"
+            android:exported="true"
+            android:permission="com.geely.desktop.permission.VEHICLE_BRIDGE"
+            android:process=":vehicle_bridge"
+            android:stopWithTask="false">
+            <intent-filter>
+                <action android:name="com.geely.desktop.vehicle.action.BIND" />
+            </intent-filter>
+        </service>
+
+        <receiver
+            android:name="com.geely.desktop.vehicle.bridge.BridgeBootReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name="com.geely.desktop.vehicle.bridge.AutoGrantPackageReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.PACKAGE_REPLACED" />
+                <data android:scheme="package" />
+            </intent-filter>
+        </receiver>
+    </application>
+</manifest>
