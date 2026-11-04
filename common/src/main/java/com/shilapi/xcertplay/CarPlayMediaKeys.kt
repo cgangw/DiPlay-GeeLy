@@ -41,6 +41,8 @@ import kotlin.math.roundToInt
  */
 internal object CarPlayMediaKeys {
     private const val TAG = "DiPlay-MediaKeys"
+    // Enough of the last steering keys to see one press end to end, but still one readable report.
+    private const val BRIDGE_EVENT_LOG = 20
     private const val ACTIONS = PlaybackState.ACTION_PLAY or PlaybackState.ACTION_PAUSE or
         PlaybackState.ACTION_PLAY_PAUSE or PlaybackState.ACTION_SKIP_TO_NEXT or PlaybackState.ACTION_SKIP_TO_PREVIOUS
 
@@ -99,6 +101,8 @@ internal object CarPlayMediaKeys {
     private var lastSentAt = 0L
     private val observedKeys = ArrayDeque<String>()
     private val lastSystemTrigger = mutableMapOf<String, Long>()
+    // The last steering keys and what happened to each, so an exported report explains a silent key.
+    private val bridgeEventLog = ArrayDeque<String>()
     private var mediaAudioActive = false
     // carlito | Resume only the music paused by this speech burst in the same controller session.
     private var speechPlaying = false
@@ -387,22 +391,46 @@ internal object CarPlayMediaKeys {
         source: String = "oneos") {
         mainHandler.post {
             if (generation != steeringGeneration) return@post
-            if (learning == null && onBridgeZoomKey(event)) return@post
-            if (learning != null || steeringProfile?.bindings?.any { it.isVendorInput } == true) {
-                onObservedKey(SteeringObservedKey(event.keyCode, event.action, source))
+            val label = "key=${event.keyCode} action=${event.action} source=$source"
+            if (learning == null && onBridgeZoomKey(event)) {
+                noteBridgeEvent("$label -> map zoom")
                 return@post
             }
-            if (steeringProfile != null) return@post
+            if (learning != null || steeringProfile?.bindings?.any { it.isVendorInput } == true) {
+                onObservedKey(SteeringObservedKey(event.keyCode, event.action, source))
+                noteBridgeEvent("$label -> observed")
+                return@post
+            }
+            if (steeringProfile != null) {
+                noteBridgeEvent("$label -> dropped, key is not in the saved profile")
+                return@post
+            }
             val operation = when (event.keyCode) {
                 GeelySteeringKeyCodes.MEDIA_PLAY_PAUSE -> "play_pause"
                 GeelySteeringKeyCodes.MEDIA_NEXT, GeelySteeringKeyCodes.SEEK_NEXT -> "next"
                 GeelySteeringKeyCodes.MEDIA_PREVIOUS, GeelySteeringKeyCodes.SEEK_PREVIOUS -> "previous"
                 GeelySteeringKeyCodes.VOICE_ASSIST -> "siri"
-                else -> return@post
+                else -> {
+                    noteBridgeEvent("$label -> dropped, no media mapping")
+                    return@post
+                }
             }
-            if (steeringProfile?.bindings?.any { it.operation == operation } == true) return@post
+            if (steeringProfile?.bindings?.any { it.operation == operation } == true) {
+                noteBridgeEvent("$label -> dropped, $operation is bound to another key")
+                return@post
+            }
             val trigger = if (operation == "siri") event.action in 1..4 else event.action == 0 || event.action == 2
-            if (trigger) sendSteeringOperation(operation, source)
+            if (trigger) {
+                noteBridgeEvent("$label -> $operation")
+                sendSteeringOperation(operation, source)
+            } else noteBridgeEvent("$label -> ignored, $operation waits for a gesture")
+        }
+    }
+
+    private fun noteBridgeEvent(text: String) {
+        synchronized(this) {
+            if (bridgeEventLog.size >= BRIDGE_EVENT_LOG) bridgeEventLog.removeFirst()
+            bridgeEventLog.addLast(text)
         }
     }
 
@@ -523,7 +551,10 @@ internal object CarPlayMediaKeys {
         val permitted = appContext?.checkSelfPermission(android.Manifest.permission.READ_LOGS) == android.content.pm.PackageManager.PERMISSION_GRANTED
         "systemLogAccess=$permitted\n" + SteeringLogAccess.diagnostics() + "\n" +
             (bridgeInput?.diagnostics() ?: "last: $lastGeelyInputDiagnostics") + "\n" +
-            (keyLogMonitor?.diagnostics() ?: "last: $lastKeyLogDiagnostics") + "\n" + observedKeys.joinToString("\n")
+            (keyLogMonitor?.diagnostics() ?: "last: $lastKeyLogDiagnostics") + "\n" +
+            "recent steering keys:\n" +
+            (if (bridgeEventLog.isEmpty()) "none" else bridgeEventLog.joinToString("\n")) + "\n" +
+            observedKeys.joinToString("\n")
     }
 
     fun steeringDirectReady(): Boolean = synchronized(this) { bridgeInput?.ready() == true }
