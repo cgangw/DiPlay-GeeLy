@@ -145,9 +145,14 @@ internal class BridgeCore(val context: android.content.Context) : Closeable {
         putStringArrayList(
             "channels",
             arrayListOf(
-                "gd_vehicle_bridge=" + if (reader.connected) "READY" else "UNAVAILABLE",
-                "adapt_api=" + if (reader.connected) "READY" else "UNAVAILABLE",
-                "ecarx_service=OPTIONAL",
+                "car=" + if (reader.carLoaded) "READY" else "UNAVAILABLE",
+                "car_class=" + reader.carClassName,
+                "car_api=" + reader.carApi.take(300),
+                "car_function=" + if (reader.functionReady) "READY" else "UNAVAILABLE",
+                "sensor_manager=" + if (reader.sensorReady) "READY" else "UNAVAILABLE",
+                "gd_vehicle_bridge=" + if (reader.functionReady) "READY" else "UNAVAILABLE",
+                "adapt_api=" + if (reader.functionReady || reader.sensorReady) "READY" else "UNAVAILABLE",
+                "ecarx_service=" + if (reader.ecarxReady) "READY" else "OPTIONAL",
                 "direct_binder=UNAVAILABLE",
             ),
         )
@@ -165,16 +170,24 @@ internal class BridgeCore(val context: android.content.Context) : Closeable {
         }
         require(target.bindings.size <= MAX_BINDINGS) { "Too many bindings" }
         val values = Bundle()
+        val units = Bundle()
         val states = Bundle()
         target.bindings.forEach { binding ->
             val reading = runCatching { reader.read(binding) }
                 .getOrElse { Reading(null, "READ_FAILED") }
             states.putString(binding.field, reading.state)
-            reading.value?.let { raw -> normalize(binding, raw)?.let { values.putDouble(binding.field, it) } }
+            reading.value?.let { raw ->
+                normalize(binding, raw)?.let {
+                    values.putDouble(binding.field, it)
+                    // The client derives speed and rpm from the unit, so it must travel with the value.
+                    units.putString(binding.field, binding.unit)
+                }
+            }
         }
         return Bundle().apply {
             putInt("schema", 1)
             putBundle("values", values)
+            putBundle("units", units)
             putBundle("states", states)
         }
     }
@@ -209,10 +222,50 @@ internal class BridgeCore(val context: android.content.Context) : Closeable {
                     ).joinToString(",") { "\"" + it.replace("\"", "'") + "\"" },
                 )
             }
+            // A unit without a saved profile still needs evidence: discover what it can read.
+            addAll(channelRows())
+            addAll(discoveryRows())
         }
         file.writeText(rows.joinToString("\n"))
         return ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY)
     }
+
+    /** One row per vendor channel, so the report alone explains why nothing is readable. */
+    private fun channelRows(): List<String> = listOf(
+        channelRow("car", if (reader.carLoaded) "READY" else "UNAVAILABLE", reader.carClassName),
+        channelRow("car_function", if (reader.functionReady) "READY" else "UNAVAILABLE", ""),
+        channelRow("sensor_manager", if (reader.sensorReady) "READY" else "UNAVAILABLE", ""),
+        channelRow("ecarx_service", if (reader.ecarxReady) "READY" else "OPTIONAL", ""),
+        channelRow("car_api", "INFO", reader.carApi.take(400)),
+    )
+
+    private fun channelRow(name: String, state: String, note: String): String =
+        listOf(
+            "diagnostic",
+            "channel",
+            "0",
+            name,
+            "0",
+            "none",
+            "NONE",
+            "",
+            state,
+            "",
+            "1.0",
+            "0.0",
+            note,
+            "",
+        ).joinToString(",") { "\"" + it.replace("\"", "'") + "\"" }
+
+    /** Every model preset plus reflective vendor constants, probed on every channel. */
+    private fun discoveryRows(): List<String> = runCatching {
+        val presets = Presets.modelIds.mapNotNull { modelId ->
+            Presets.open(context, modelId)?.let { text ->
+                runCatching { Profiles.decode(text) }.getOrNull()
+            }
+        }
+        PropertyEnumeration(reader, presets).rows()
+    }.onFailure { Log.w("GD-Bridge-Service", "enumeration failed", it) }.getOrDefault(emptyList())
 
     /** Vendor encodings collapse to the normalized unit DiPlay expects, then scale and offset. */
     private fun normalize(binding: Binding, raw: Double): Double? {

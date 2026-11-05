@@ -20,11 +20,69 @@ internal data class Reading(val value: Double?, val state: String)
 internal class PropertyReader(private val context: Context) : Closeable {
     private val registered = java.util.concurrent.ConcurrentHashMap.newKeySet<Int>()
     private val car: Any? by lazy { loadCar() }
-    private val carFunction: Any? by lazy { call(car, "getICarFunction") }
-    private val sensorManager: Any? by lazy { call(car, "getSensorManager") }
+    @Volatile private var functionCache: Any? = null
+    @Volatile private var functionTriedAt = 0L
+    @Volatile private var sensorCache: Any? = null
+    @Volatile private var sensorTriedAt = 0L
     private val ecarx by lazy { EcarxPropertyService(context) }
 
-    val connected: Boolean get() = carFunction != null
+    val connected: Boolean get() = function() != null
+
+    /** Channel availability, surfaced verbatim in the bridge status. */
+    val carLoaded: Boolean get() = car != null
+    val functionReady: Boolean get() = function() != null
+    val sensorReady: Boolean get() = sensor() != null
+    val ecarxReady: Boolean get() = ecarx.available
+
+    /** The vendor object names, so a firmware whose API differs can be diagnosed without logs. */
+    val carClassName: String get() = car?.javaClass?.name.orEmpty().ifEmpty { "none" }
+
+    val carApi: String get() {
+        val type = car?.javaClass ?: return "none"
+        return type.methods
+            .filter { it.parameterCount == 0 && it.name.startsWith("get") }
+            .map { it.name }
+            .distinct()
+            .sorted()
+            .joinToString(",")
+    }
+
+    /** The vendor object may appear only after the car service finishes booting; retry on demand. */
+    private fun function(): Any? {
+        functionCache?.let { return it }
+        val now = android.os.SystemClock.elapsedRealtime()
+        if (functionTriedAt != 0L && now - functionTriedAt < RETRY_MS) return null
+        functionTriedAt = now
+        val resolved = resolve(
+            car, "getICarFunction", "getCarFunction", "getFunction",
+            "getCarFunctionManager", "getICarFunctionManager",
+        )
+        functionCache = resolved
+        return resolved
+    }
+
+    private fun sensor(): Any? {
+        sensorCache?.let { return it }
+        val now = android.os.SystemClock.elapsedRealtime()
+        if (sensorTriedAt != 0L && now - sensorTriedAt < RETRY_MS) return null
+        sensorTriedAt = now
+        val resolved = resolve(car, "getSensorManager", "getISensor", "getSensor")
+        sensorCache = resolved
+        return resolved
+    }
+
+    private fun resolve(target: Any?, vararg names: String): Any? {
+        val type = target?.javaClass ?: return null
+        names.forEach { name ->
+            val value = runCatching {
+                type.methods.firstOrNull { it.name == name && it.parameterCount == 0 }
+                    ?.invoke(target)
+            }.getOrNull()
+            if (value != null) return value
+        }
+        return null
+    }
+
 
     fun read(binding: Binding): Reading {
         if (!connected) return Reading(null, "BRIDGE_UNAVAILABLE")
@@ -50,26 +108,26 @@ internal class PropertyReader(private val context: Context) : Closeable {
 
     /** Newer vendor builds expose the raw customization functions, e.g. FX11 signals. */
     private fun xuiCustomize(binding: Binding): Double? {
-        val call = call(carFunction, "getCustomizeFunctionValue", binding.propertyId, binding.areaInt)
-            ?: call(carFunction, "getCustomizeFunctionValue", binding.propertyId)
+        val call = call(function(), "getCustomizeFunctionValue", binding.propertyId, binding.areaInt)
+            ?: call(function(), "getCustomizeFunctionValue", binding.propertyId)
         return call?.toDouble()
     }
 
     /** Published ADAPT-API functions and sensors. */
     private fun xuiFunction(binding: Binding): Double? =
-        (call(carFunction, "getFunctionValue", binding.propertyId, binding.areaInt)
-            ?: call(carFunction, "getFunctionValue", binding.propertyId))?.toDouble()
+        (call(function(), "getFunctionValue", binding.propertyId, binding.areaInt)
+            ?: call(function(), "getFunctionValue", binding.propertyId))?.toDouble()
 
     private fun xuiSensor(binding: Binding): Double? {
         subscribe(binding.propertyId)
-        return (call(sensorManager, "getSensorLatestValue", binding.propertyId)
-            ?: call(sensorManager, "getSensorValue", binding.propertyId))?.toDouble()
+        return (call(sensor(), "getSensorLatestValue", binding.propertyId)
+            ?: call(sensor(), "getSensorValue", binding.propertyId))?.toDouble()
     }
 
     /** Sensors only report once a listener is registered, exactly like the vendor adapter. */
     private fun subscribe(id: Int) {
         if (!registered.add(id)) return
-        val target = sensorManager ?: return
+        val target = sensor() ?: return
         val listener = sensorListener ?: return
         invokeRaw(target, "registerListener", listener, id)
     }
@@ -85,12 +143,32 @@ internal class PropertyReader(private val context: Context) : Closeable {
         }.getOrNull()
     }
 
+    /** Channel-by-channel probes used by the enumeration scan; a null result means unsupported. */
+    fun probeCustomize(id: Int, area: Int): Double? =
+        call(function(), "getCustomizeFunctionValue", id, area)?.toDouble()
+            ?: call(function(), "getCustomizeFunctionValue", id)?.toDouble()
+
+    fun probeFunction(id: Int, area: Int): Double? =
+        call(function(), "getFunctionValue", id, area)?.toDouble()
+            ?: call(function(), "getFunctionValue", id)?.toDouble()
+
+    fun probeSensor(id: Int): Double? {
+        subscribe(id)
+        return (call(sensor(), "getSensorLatestValue", id)
+            ?: call(sensor(), "getSensorValue", id))?.toDouble()
+    }
+
+    fun probeEcarx(id: Int, area: Int): Double? = ecarx.read(id, area)
+
     override fun close() {
         ecarx.close()
     }
 
     companion object {
         private const val TAG = "GD-Bridge-Reader"
+
+        /** The vendor object is only created once the head unit's car service is up. */
+        const val RETRY_MS = 5_000L
 
         /** Reflective call with primitive coercion; the vendor classes differ per head unit. */
         fun call(target: Any?, name: String, vararg args: Any?): Number? {
@@ -159,15 +237,20 @@ internal class EcarxPropertyService(private val context: Context) : Closeable {
         }
     }
 
-    fun read(binding: Binding): Double? {
+    fun read(binding: Binding): Double? = read(binding.propertyId, binding.areaInt)
+
+    fun read(id: Int, area: Int): Double? {
         if (!ensureBound()) return null
         val target = delegate ?: return null
-        return (call(target, "getIntProperty", binding.propertyId, binding.areaInt)
-            ?: call(target, "getFloatProperty", binding.propertyId, binding.areaInt)
-            ?: call(target, "getIntProperty", binding.propertyId)
-            ?: call(target, "getFloatProperty", binding.propertyId)
-            ?: call(target, "getPropertyValue", binding.propertyId))?.toDouble()
+        return (call(target, "getIntProperty", id, area)
+            ?: call(target, "getFloatProperty", id, area)
+            ?: call(target, "getIntProperty", id)
+            ?: call(target, "getFloatProperty", id)
+            ?: call(target, "getPropertyValue", id))?.toDouble()
     }
+
+    /** True once the vendor binder is reachable; never forces a bind. */
+    val available: Boolean get() = delegate != null
 
     private fun ensureBound(): Boolean {
         if (delegate != null) return true
