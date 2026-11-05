@@ -17,7 +17,7 @@ android {
         // Matches the head unit: the bridge talks to vendor services that require Android 9.
         minSdk = 28
         targetSdk = 30
-        versionCode = 46
+        versionCode = 47
         versionName = bridgeVersionName
     }
 
