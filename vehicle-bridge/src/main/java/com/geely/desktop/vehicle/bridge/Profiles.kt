@@ -42,14 +42,16 @@ internal object Presets {
     const val GALAXY_L6 = "galaxy_l6"
     const val BOYUE_L_G636 = "boyue_l_g636"
     const val BOYUE_L_FX11 = "boyue_l_fx11"
+    const val XINGYUE_L_KX11 = "xingyue_l_kx11"
 
-    val modelIds: Array<String> = arrayOf(GALAXY_L6, BOYUE_L_G636, BOYUE_L_FX11)
+    val modelIds: Array<String> = arrayOf(GALAXY_L6, BOYUE_L_G636, BOYUE_L_FX11, XINGYUE_L_KX11)
 
     fun open(context: Context, modelId: String): String? {
         val res = when (modelId) {
             GALAXY_L6 -> R.raw.galaxy_l6_properties
             BOYUE_L_G636 -> R.raw.boyue_l_g636_properties
             BOYUE_L_FX11 -> R.raw.boyue_l_fx11_properties
+            XINGYUE_L_KX11 -> R.raw.xingyue_l_kx11_properties
             else -> return null
         }
         return context.resources.openRawResource(res).bufferedReader().use { it.readText() }

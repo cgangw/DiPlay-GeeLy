@@ -1,0 +1,72 @@
+{
+  "schema": 1,
+  "author": "carlito",
+  "model": "星越 L · KX11（25 揽星）",
+  "bindings": [
+    {
+      "field": "SPEED",
+      "chain": "adapt_api",
+      "kind": "sensor",
+      "area": "global",
+      "propertyId": 1048832,
+      "name": "SENSOR_TYPE_CAR_SPEED",
+      "origin": "sensor-scan",
+      "scale": 1.0,
+      "offset": 0.0,
+      "unit": "km/h",
+      "encoding": "LINEAR"
+    },
+    {
+      "field": "ODOMETER",
+      "chain": "adapt_api",
+      "kind": "sensor",
+      "area": "global",
+      "propertyId": 1050368,
+      "name": "SENSOR_TYPE_ODOMETER",
+      "origin": "sensor-scan",
+      "scale": 1.0,
+      "offset": 0.0,
+      "unit": "km",
+      "encoding": "LINEAR"
+    },
+    {
+      "field": "RANGE",
+      "chain": "adapt_api",
+      "kind": "sensor",
+      "area": "global",
+      "propertyId": 1050624,
+      "name": "SENSOR_TYPE_ENDURANCE_MILEAGE",
+      "origin": "sensor-scan",
+      "scale": 1.0,
+      "offset": 0.0,
+      "unit": "km",
+      "encoding": "LINEAR"
+    },
+    {
+      "field": "AMBIENT_TEMPERATURE",
+      "chain": "adapt_api",
+      "kind": "sensor",
+      "area": "global",
+      "propertyId": 1051392,
+      "name": "SENSOR_TYPE_TEMPERATURE_AMBIENT",
+      "origin": "sensor-scan",
+      "scale": 1.0,
+      "offset": 0.0,
+      "unit": "°C",
+      "encoding": "LINEAR"
+    },
+    {
+      "field": "CABIN_TEMPERATURE",
+      "chain": "adapt_api",
+      "kind": "sensor",
+      "area": "global",
+      "propertyId": 1051648,
+      "name": "SENSOR_TYPE_TEMPERATURE_INDOOR",
+      "origin": "sensor-scan",
+      "scale": 1.0,
+      "offset": 0.0,
+      "unit": "°C",
+      "encoding": "LINEAR"
+    }
+  ]
+}
