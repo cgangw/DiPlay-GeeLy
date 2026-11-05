@@ -773,7 +773,7 @@ class CarPlayController(
         hudNavigationListener = listener
         val current = synchronized(hudRouteLock) {
             hudRouteState.current()?.let {
-                CarPlayHudGuidance(it.distanceMeters, it.maneuver, it.road)
+                CarPlayHudGuidance(it.distanceMeters, it.maneuver, it.road, it.arrivalEpochSeconds)
             }
         }
         mainHandler.post {
@@ -982,7 +982,7 @@ class CarPlayController(
             val update = hudRouteState.accept(frame.messageId, frame.payload)
             changed = update != BydHudRouteChange.NONE
             hudRouteState.current()?.let {
-                CarPlayHudGuidance(it.distanceMeters, it.maneuver, it.road)
+                CarPlayHudGuidance(it.distanceMeters, it.maneuver, it.road, it.arrivalEpochSeconds)
             }
         }
         if (changed) {

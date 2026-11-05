@@ -21,8 +21,11 @@ import android.view.Display
 import android.view.Gravity
 import android.view.View
 import android.view.WindowManager
+import com.shilapi.xcertplay.host.R
 import com.shilapi.xcertplay.hud.CarPlayHudGuidance
 import java.lang.ref.WeakReference
+import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Locale
 import kotlin.math.min
 
@@ -55,10 +58,6 @@ internal object GeelyHudProjection : DisplayManager.DisplayListener {
     private var attachedHeight = 0
     private var guidance: CarPlayHudGuidance? = null
     private var navigationHidden = false
-    private val expireGuidance = Runnable {
-        guidance = null
-        refresh()
-    }
 
     fun attach(activity: Activity) {
         mainHandler.post {
@@ -79,7 +78,6 @@ internal object GeelyHudProjection : DisplayManager.DisplayListener {
             if (activityRef?.get() !== activity) return@post
             detachWindow()
             stopVehicleReader()
-            mainHandler.removeCallbacks(expireGuidance)
             guidance = null
             navigationHidden = false
             displayManager?.unregisterDisplayListener(this)
@@ -88,11 +86,10 @@ internal object GeelyHudProjection : DisplayManager.DisplayListener {
         }
     }
 
+    /** Route guidance is event driven: only an explicit clear removes the card. */
     fun update(value: CarPlayHudGuidance?) {
         mainHandler.post {
-            mainHandler.removeCallbacks(expireGuidance)
             guidance = value
-            if (value != null) mainHandler.postDelayed(expireGuidance, 30_000L)
             refresh()
         }
     }
@@ -331,6 +328,10 @@ internal class GeelyHudGuidanceView(context: Context, initialScalePercent: Int) 
         color = Color.WHITE
         typeface = Typeface.create("sans-serif", Typeface.NORMAL)
     }
+    private val etaPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.rgb(168, 182, 202)
+        typeface = Typeface.create("sans-serif", Typeface.NORMAL)
+    }
     private val arrow = Path()
 
     override fun onDraw(canvas: Canvas) {
@@ -358,6 +359,17 @@ internal class GeelyHudGuidanceView(context: Context, initialScalePercent: Int) 
             val maxWidth = (width - textLeft - width * 0.07f).coerceAtLeast(0f)
             val road = TextUtils.ellipsize(route.road, android.text.TextPaint(roadPaint), maxWidth, TextUtils.TruncateAt.END)
             canvas.drawText(road.toString(), textLeft, centerY + accent.textSize * 0.75f, roadPaint)
+        }
+        // The iPhone's arrival time keeps the last line of the card, matching the turn card strip.
+        route.arrivalEpochSeconds?.takeIf { it > 0L }?.let { epoch ->
+            etaPaint.textSize = heightScale * 0.085f
+            val arrival = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(epoch * 1000L))
+            val baseline = if (route.road.isNotBlank()) {
+                centerY + accent.textSize * 0.75f + etaPaint.textSize * 1.35f
+            } else {
+                centerY + accent.textSize * 1.05f
+            }
+            canvas.drawText(context.getString(R.string.turn_card_info_arrival, arrival), textLeft, baseline, etaPaint)
         }
         canvas.restoreToCount(checkpoint)
     }
