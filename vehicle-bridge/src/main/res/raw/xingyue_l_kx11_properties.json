@@ -10,8 +10,8 @@
       "area": "global",
       "propertyId": 1048832,
       "name": "SENSOR_TYPE_CAR_SPEED",
-      "origin": "sensor-scan",
-      "scale": 1.0,
+      "origin": "sensor-scan · raw m/s x3.6",
+      "scale": 3.6,
       "offset": 0.0,
       "unit": "km/h",
       "encoding": "LINEAR"
