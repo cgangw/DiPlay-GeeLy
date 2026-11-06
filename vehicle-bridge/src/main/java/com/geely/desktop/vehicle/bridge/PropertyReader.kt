@@ -37,6 +37,23 @@ internal class PropertyReader(private val context: Context) : Closeable {
     /** The vendor object names, so a firmware whose API differs can be diagnosed without logs. */
     val carClassName: String get() = car?.javaClass?.name.orEmpty().ifEmpty { "none" }
 
+    /** Zero-arg getters of every vendor manager, so a report can point at lamp and signal APIs. */
+    val managerApis: String get() {
+        val type = car?.javaClass ?: return "none"
+        return type.methods
+            .filter { it.parameterCount == 0 && it.name.startsWith("get") }
+            .mapNotNull { getter ->
+                val manager = runCatching { getter.invoke(car) }.getOrNull() ?: return@mapNotNull null
+                if (manager is String || manager is Number || manager is Boolean) return@mapNotNull null
+                val calls = manager.javaClass.methods
+                    .filter { it.parameterCount == 0 && it.name.startsWith("get") }
+                    .map { it.name }.distinct().sorted().joinToString("/")
+                getter.name + "=" + calls
+            }
+            .distinct()
+            .joinToString(";")
+    }
+
     val carApi: String get() {
         val type = car?.javaClass ?: return "none"
         return type.methods

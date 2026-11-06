@@ -237,6 +237,7 @@ internal class BridgeCore(val context: android.content.Context) : Closeable {
         channelRow("sensor_manager", if (reader.sensorReady) "READY" else "UNAVAILABLE", ""),
         channelRow("ecarx_service", if (reader.ecarxReady) "READY" else "OPTIONAL", ""),
         channelRow("car_api", "INFO", reader.carApi.take(400)),
+        channelRow("car_managers", "INFO", reader.managerApis.take(1200)),
     )
 
     private fun channelRow(name: String, state: String, note: String): String =
