@@ -165,9 +165,39 @@ internal class GeelyProjectionView(context: Context) : View(context) {
 
     /** Live HUD: only the value, centred and larger; the field label is dropped. */
     private fun drawValue(canvas: Canvas, rect: RectF, value: String) {
-        text.color = Color.WHITE; text.textSize = min(rect.height() * 0.46f, rect.width() * 0.22f)
-        canvas.drawText(TextUtils.ellipsize(value, text, rect.width() * 0.94f, TextUtils.TruncateAt.END).toString(),
-            rect.centerX(), rect.centerY() + text.textSize * 0.36f, text)
+        val size = min(rect.height() * 0.46f, rect.width() * 0.22f)
+        val unit = UNIT_SUFFIX.firstOrNull { value.endsWith(it) }.orEmpty()
+        if (unit.isEmpty()) {
+            text.color = Color.WHITE
+            text.textSize = size
+            canvas.drawText(TextUtils.ellipsize(value, text, rect.width() * 0.94f, TextUtils.TruncateAt.END).toString(),
+                rect.centerX(), rect.centerY() + text.textSize * 0.36f, text)
+            return
+        }
+        // The unit is secondary information: it shares the baseline but is much smaller than the number.
+        val number = value.dropLast(unit.length).trimEnd()
+        text.textSize = size
+        val numberWidth = text.measureText(number)
+        text.textSize = size * UNIT_RATIO
+        val unitWidth = text.measureText(unit)
+        val gap = size * 0.08f
+        val total = numberWidth + gap + unitWidth
+        if (total > rect.width() * 0.94f) {
+            text.color = Color.WHITE
+            text.textSize = size
+            canvas.drawText(TextUtils.ellipsize(value, text, rect.width() * 0.94f, TextUtils.TruncateAt.END).toString(),
+                rect.centerX(), rect.centerY() + text.textSize * 0.36f, text)
+            return
+        }
+        val startX = rect.centerX() - total / 2f
+        val baseline = rect.centerY() + size * 0.36f
+        text.color = Color.WHITE
+        text.textSize = size
+        canvas.drawText(number, startX, baseline, text)
+        text.color = Color.rgb(201, 214, 228)
+        text.textSize = size * UNIT_RATIO
+        canvas.drawText(unit, startX + numberWidth + gap, baseline, text)
+        text.color = Color.WHITE
     }
 
     private fun formatted(field: ProjectionField): String {
@@ -218,3 +248,7 @@ internal class GeelyProjectionView(context: Context) : View(context) {
     }
     override fun performClick(): Boolean { super.performClick(); return true }
 }
+
+/** Suffixes drawn as a smaller secondary unit on the value cards. */
+private val UNIT_SUFFIX = listOf(" km/h", " rpm")
+private const val UNIT_RATIO = 0.45f

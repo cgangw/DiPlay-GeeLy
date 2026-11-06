@@ -329,7 +329,7 @@ internal class GeelyHudGuidanceView(context: Context, initialScalePercent: Int) 
         typeface = Typeface.create("sans-serif", Typeface.NORMAL)
     }
     private val etaPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.rgb(168, 182, 202)
+        color = Color.rgb(214, 224, 236)
         typeface = Typeface.create("sans-serif", Typeface.NORMAL)
     }
     private val arrow = Path()
@@ -360,16 +360,26 @@ internal class GeelyHudGuidanceView(context: Context, initialScalePercent: Int) 
             val road = TextUtils.ellipsize(route.road, android.text.TextPaint(roadPaint), maxWidth, TextUtils.TruncateAt.END)
             canvas.drawText(road.toString(), textLeft, centerY + accent.textSize * 0.75f, roadPaint)
         }
-        // The iPhone's arrival time keeps the last line of the card, matching the turn card strip.
-        route.arrivalEpochSeconds?.takeIf { it > 0L }?.let { epoch ->
-            etaPaint.textSize = heightScale * 0.085f
-            val arrival = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(epoch * 1000L))
+        // The remaining distance and the iPhone's arrival time share the last line of the card.
+        val info = buildList {
+            route.remainingMeters?.takeIf { it > 0L }?.let { meters ->
+                add(context.getString(R.string.turn_card_info_km, meters / 1000.0))
+            }
+            route.arrivalEpochSeconds?.takeIf { it > 0L }?.let { epoch ->
+                val arrival = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(epoch * 1000L))
+                add(context.getString(R.string.turn_card_info_arrival, arrival))
+            }
+        }
+        if (info.isNotEmpty()) {
+            etaPaint.textSize = heightScale * 0.115f
+            val maxWidth = (width - textLeft - width * 0.07f).coerceAtLeast(0f)
+            val text = TextUtils.ellipsize(info.joinToString(" · "), android.text.TextPaint(etaPaint), maxWidth, TextUtils.TruncateAt.END)
             val baseline = if (route.road.isNotBlank()) {
-                centerY + accent.textSize * 0.75f + etaPaint.textSize * 1.35f
+                centerY + accent.textSize * 0.75f + etaPaint.textSize * 1.2f
             } else {
                 centerY + accent.textSize * 1.05f
             }
-            canvas.drawText(context.getString(R.string.turn_card_info_arrival, arrival), textLeft, baseline, etaPaint)
+            canvas.drawText(text.toString(), textLeft, baseline, etaPaint)
         }
         canvas.restoreToCount(checkpoint)
     }

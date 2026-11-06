@@ -8,6 +8,8 @@ internal data class BydHudGuidance(
     val gaode: Int = 0,
     val road: String = "",
     val arrivalEpochSeconds: Long? = null,
+    /** Distance left on the whole route, not to the next maneuver. */
+    val remainingMeters: Long? = null,
 )
 
 internal data class BydAppleManeuver(
@@ -74,6 +76,7 @@ internal class BydHudRouteState(
             gaode = gaode,
             road = roadFor(maneuver),
             arrivalEpochSeconds = arrivalEpochSeconds,
+            remainingMeters = remainingMeters,
         )
     }
 

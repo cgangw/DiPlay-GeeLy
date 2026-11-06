@@ -7,4 +7,6 @@ data class CarPlayHudGuidance(
     val road: String,
     /** Phone-supplied arrival time, in epoch seconds; absent when the iPhone does not send one. */
     val arrivalEpochSeconds: Long? = null,
+    /** Distance left on the whole route, not to the next maneuver. */
+    val remainingMeters: Long? = null,
 )
