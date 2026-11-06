@@ -146,7 +146,9 @@ internal class GeelyProjectionView(context: Context) : View(context) {
                 } else if (editing) drawText(canvas, rect, context.getString(item.field.label), "—")
             } else {
                 val value = if (item.field == ProjectionField.CLOCK) clock.format(Date()) else formatted(item.field)
-                drawText(canvas, rect, context.getString(item.field.label), value)
+                // tianwen | The live HUD shows only the value; the editor keeps the label for identification.
+                if (editing) drawText(canvas, rect, context.getString(item.field.label), value)
+                else drawValue(canvas, rect, value)
             }
             canvas.restoreToCount(checkpoint)
         }
@@ -159,6 +161,13 @@ internal class GeelyProjectionView(context: Context) : View(context) {
         text.color = Color.WHITE; text.textSize = min(rect.height() * 0.38f, rect.width() * 0.22f)
         canvas.drawText(TextUtils.ellipsize(value, text, rect.width() * 0.94f, TextUtils.TruncateAt.END).toString(),
             rect.centerX(), rect.top + rect.height() * 0.76f, text)
+    }
+
+    /** Live HUD: only the value, centred and larger; the field label is dropped. */
+    private fun drawValue(canvas: Canvas, rect: RectF, value: String) {
+        text.color = Color.WHITE; text.textSize = min(rect.height() * 0.46f, rect.width() * 0.22f)
+        canvas.drawText(TextUtils.ellipsize(value, text, rect.width() * 0.94f, TextUtils.TruncateAt.END).toString(),
+            rect.centerX(), rect.centerY() + text.textSize * 0.36f, text)
     }
 
     private fun formatted(field: ProjectionField): String {
