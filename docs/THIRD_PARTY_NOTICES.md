@@ -10,6 +10,10 @@ Upstream credits [LIVI](https://github.com/f-io/LIVI) and [Showcase](https://git
 
 `common/src/main/java/com/shilapi/xcertplay/DiPlayActivity.kt` adapts the palette, visual arrangement and interface copy of the [DiAuto project](https://github.com/shihabal3amri/DiAuto). DiAuto's source is licensed under AGPL version 3. The UI file is marked AGPL-3.0-only; its license text is included in `docs/licenses/DiAuto-AGPL-3.0.txt`.
 
+## Geely vehicle integration
+
+The Geely adaptation incorporates code from the [carlito12345/DiPlay](https://github.com/carlito12345/DiPlay) fork of [shihabal3amri/DiPlay](https://github.com/shihabal3amri/DiPlay): the `vehicle-probe` module, vehicle map projection and Geely steering key support under `common`, the ECARX hotspot reading and audio coordination helpers under `shared`, and the steering-profile server. Both the fork and its upstream are licensed under GNU GPL version 3. Source comments marked `carlito |` and the `author` fields in bundled vehicle property profiles retain their original attribution and are preserved as the license requires. The separately installed `vehicle-bridge` APK is an independent implementation and contains no code from that fork.
+
 ## CarPlay icon
 
 The unmodified icon was obtained from Apple's developer site at:

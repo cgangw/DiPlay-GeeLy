@@ -7,6 +7,8 @@
 > **本仓库是 DiPlay 的吉利车机适配版本。**
 > 基于 [shihabal3amri/DiPlay](https://github.com/shihabal3amri/DiPlay) v0.2.22，分支 `tianwen_dev`。它不是上游的比亚迪版本，上游作者不提供支持。
 >
+> 来源声明：吉利适配中的 `vehicle-probe` 模块、车辆地图投屏与吉利方控支持（`common`）、ECARX 热点读取与音频协调（`shared`）及方向盘配置服务端，代码取自 [carlito12345/DiPlay](https://github.com/carlito12345/DiPlay) fork（GPL-3.0，同样基于 shihabal3amri/DiPlay），源码中的 `carlito |` 注释与车辆 profile 作者标记按许可要求予以保留。单独安装的 `vehicle-bridge` APK 为独立实现，不含该 fork 代码。
+>
 > 已在**吉利星越L（KX11，2025 款揽星）**实车验证安装并运行；其他吉利车型、车机及固件版本尚未验证。
 >
 > 吉利相关新增：ECARX 原厂热点处理、吉利方向盘按键映射与按键识别、HUD／仪表导航投屏及可编辑布局、全屏地图投至仪表、吉利音频路由，以及用于读取原厂车辆属性的 `vehicle-probe` 桥接。

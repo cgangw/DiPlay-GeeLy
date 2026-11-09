@@ -76,6 +76,8 @@ The app and the website include English, Arabic, Russian, Ukrainian, Spanish, Si
 
 Based on [xcertplay](https://github.com/shilapi/xcertplay), GPL-3.0. The home/settings UI and website adapt [DiAuto](https://github.com/shihabal3amri/DiAuto), AGPL-3.0; that license is included in `docs/licenses`. Preserve those notices when distributing modifications. CarPlay and its icon belong to Apple Inc.; no Apple or BYD affiliation or endorsement is implied.
 
+The Geely vehicle integration — the `vehicle-probe` module, vehicle map projection and Geely steering key support in `common`, the ECARX hotspot reading and audio coordination helpers in `shared`, and the steering-profile server — incorporates code from the [carlito12345/DiPlay](https://github.com/carlito12345/DiPlay) fork, GPL-3.0, which is itself based on shihabal3amri/DiPlay. Original `carlito |` source comments and vehicle profile attributions are preserved as the license requires. The separately installed `vehicle-bridge` APK is an independent implementation and contains no code from that fork.
+
 This repository starts with a clean public source snapshot. Local research, tester reports and release-signing secrets are excluded. The complete source corresponding to the APK is provided with every release; experimental runtime identity assets are described separately in the build instructions and notices.
 
 ## Local release packaging
