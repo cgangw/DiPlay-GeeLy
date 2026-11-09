@@ -22,6 +22,9 @@
     <string name="projection_high_beam">High beam</string>
     <string name="projection_low_beam">Low beam</string>
     <string name="projection_clock">Time</string>
+    <string name="projection_range">Range</string>
+    <string name="projection_ambient_temperature">Ambient temperature</string>
+    <string name="projection_cabin_temperature">Cabin temperature</string>
     <string name="projection_on">On</string>
     <string name="projection_off">Off</string>
     <string name="projection_x">Horizontal position (%)</string>

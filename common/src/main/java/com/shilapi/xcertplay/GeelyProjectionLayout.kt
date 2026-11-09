@@ -25,6 +25,9 @@ internal enum class ProjectionField(val label: Int, val property: String? = null
     RPM(R.string.projection_rpm, "RPM"), LEFT_INDICATOR(R.string.projection_left_indicator, "LEFT_INDICATOR"),
     RIGHT_INDICATOR(R.string.projection_right_indicator, "RIGHT_INDICATOR"),
     HIGH_BEAM(R.string.projection_high_beam, "HIGH_BEAM"), LOW_BEAM(R.string.projection_low_beam, "LOW_BEAM"),
+    RANGE(R.string.projection_range, "RANGE"),
+    AMBIENT_TEMPERATURE(R.string.projection_ambient_temperature, "AMBIENT_TEMPERATURE"),
+    CABIN_TEMPERATURE(R.string.projection_cabin_temperature, "CABIN_TEMPERATURE"),
     CLOCK(R.string.projection_clock),
 }
 
@@ -165,7 +168,7 @@ internal class GeelyProjectionView(context: Context) : View(context) {
 
     /** Live HUD: only the value, centred and larger; the field label is dropped. */
     private fun drawValue(canvas: Canvas, rect: RectF, value: String) {
-        val size = min(rect.height() * 0.46f, rect.width() * 0.22f)
+        val size = min(rect.height() * 0.46f, rect.width() * 0.22f) * VALUE_SCALE
         val unit = UNIT_SUFFIX.firstOrNull { value.endsWith(it) }.orEmpty()
         if (unit.isEmpty()) {
             text.color = Color.WHITE
@@ -180,7 +183,7 @@ internal class GeelyProjectionView(context: Context) : View(context) {
         val numberWidth = text.measureText(number)
         text.textSize = size * UNIT_RATIO
         val unitWidth = text.measureText(unit)
-        val gap = size * 0.08f
+        val gap = (rect.height() * UNIT_GAP_RATIO).coerceIn(10f, 24f)
         val total = numberWidth + gap + unitWidth
         if (total > rect.width() * 0.94f) {
             text.color = Color.WHITE
@@ -210,6 +213,11 @@ internal class GeelyProjectionView(context: Context) : View(context) {
             }
             ProjectionField.RPM -> if (unit in setOf("rpm", "r/min", "转/分") && value.number in 0.0..15_000.0)
                 String.format(Locale.getDefault(), "%.0f rpm", value.number) else "—"
+            ProjectionField.RANGE -> if (unit in setOf("km", "公里") && value.number in 0.0..2000.0)
+                String.format(Locale.getDefault(), "%.0f km", value.number) else "—"
+            ProjectionField.AMBIENT_TEMPERATURE, ProjectionField.CABIN_TEMPERATURE ->
+                if (unit in setOf("°c", "℃") && value.number in -40.0..60.0)
+                    String.format(Locale.getDefault(), "%.0f °C", value.number) else "—"
             else -> when (value.number) {
                 0.0 -> context.getString(R.string.projection_off)
                 1.0 -> context.getString(R.string.projection_on)
@@ -250,5 +258,11 @@ internal class GeelyProjectionView(context: Context) : View(context) {
 }
 
 /** Suffixes drawn as a smaller secondary unit on the value cards. */
-private val UNIT_SUFFIX = listOf(" km/h", " rpm")
-private const val UNIT_RATIO = 0.45f
+private val UNIT_SUFFIX = listOf(" km/h", " rpm", " km", " °C")
+private const val UNIT_RATIO = 0.50f
+
+/** Space between the number and its smaller unit, relative to the number size. */
+private const val UNIT_GAP_RATIO = 0.10f
+
+/** Live value cards read slightly larger than the raw rect math suggests. */
+private const val VALUE_SCALE = 1.05f

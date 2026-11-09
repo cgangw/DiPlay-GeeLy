@@ -22,6 +22,9 @@
     <string name="projection_high_beam">远光灯</string>
     <string name="projection_low_beam">近光灯</string>
     <string name="projection_clock">时间</string>
+    <string name="projection_range">续航</string>
+    <string name="projection_ambient_temperature">车外温度</string>
+    <string name="projection_cabin_temperature">车内温度</string>
     <string name="projection_on">开</string>
     <string name="projection_off">关</string>
     <string name="projection_x">水平位置（%）</string>
