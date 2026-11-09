@@ -8,7 +8,8 @@ val localAuthenticationAssets = providers.environmentVariable("DIPLAY_AUTH_ASSET
     .orNull?.let { file(it).canonicalFile }
 
 // tianwen | Build the Geely package under a name that is distinguishable from the upstream build.
-val geelyVersionName = "0.2.22.4"
+// The release version comes from gradle.properties, shared with the vehicle bridge.
+val geelyVersionName = providers.gradleProperty("GEELY_VERSION_NAME").get()
 
 android {
     namespace = "com.shilapi.xcertplay"
@@ -61,12 +62,12 @@ android {
     }
 }
 
-// tianwen | Always publish the APK as Diplay-GeeLy-v<version>[-hud-test].apk.
+// tianwen | Always publish the APK as Diplay-Geely-25-XingYue-L-v<version>[-hud-test].apk.
 androidComponents {
     onVariants { variant ->
         val suffix = if (variant.buildType == "debug") "-hud-test" else ""
         variant.outputs.forEach { output ->
-            output.outputFileName.set("Diplay-GeeLy-v$geelyVersionName$suffix.apk")
+            output.outputFileName.set("Diplay-Geely-25-XingYue-L-v$geelyVersionName$suffix.apk")
         }
     }
 }

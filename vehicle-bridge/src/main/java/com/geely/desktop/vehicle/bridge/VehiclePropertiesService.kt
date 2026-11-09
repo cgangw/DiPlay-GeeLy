@@ -159,7 +159,7 @@ internal class BridgeCore(val context: android.content.Context) : Closeable {
         putInt("minimumApi", 28)
         putInt("steeringProtocol", 1)
         putInt("projectionProtocol", 1)
-        putString("bridge", "GD-Vehicle-Bridge-0.11.25")
+        putString("bridge", "GD-Vehicle-Bridge-" + BuildConfig.VERSION_NAME)
     }
 
     fun read(profileJson: String?): Bundle {

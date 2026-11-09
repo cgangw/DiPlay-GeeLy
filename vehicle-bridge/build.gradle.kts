@@ -3,8 +3,8 @@ plugins {
     alias(libs.plugins.android.application)
 }
 
-// The same artifact name as the upstream GD bridge.
-val bridgeVersionName = "0.11.25"
+// Same versionName as the DiPlay app, from gradle.properties, so the pair stays in sync.
+val bridgeVersionName = providers.gradleProperty("GEELY_VERSION_NAME").get()
 
 android {
     namespace = "com.geely.desktop.vehicle.bridge"
@@ -43,6 +43,7 @@ android {
 
     buildFeatures {
         aidl = true
+        buildConfig = true
     }
 
     lint {
@@ -59,7 +60,7 @@ android {
 androidComponents {
     onVariants { variant ->
         variant.outputs.forEach { output ->
-            output.outputFileName.set("GD-Vehicle-Bridge-$bridgeVersionName.apk")
+            output.outputFileName.set("Geely-25-XingYue-L-Vehicle-Bridge-v$bridgeVersionName.apk")
         }
     }
 }
