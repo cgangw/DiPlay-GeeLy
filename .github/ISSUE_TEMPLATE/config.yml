@@ -1,7 +1,7 @@
 blank_issues_enabled: false
 contact_links:
   - name: Geely adaptation guide (Simplified Chinese / 吉利适配安装指南)
-    url: https://github.com/tianwenbro/DiPlay-GeeLy/blob/tianwen_dev/docs/GEELY-INSTALL.zh-CN.md
+    url: https://github.com/tianwenbro/DiPlay-GeeLy/blob/main/docs/GEELY-INSTALL.zh-CN.md
     about: 星越 L 等吉利车型的安装、车桥配置与排障说明。
   - name: Installation and connection help
     url: https://github.com/shihabal3amri/DiPlay/blob/main/docs/INSTALL.md

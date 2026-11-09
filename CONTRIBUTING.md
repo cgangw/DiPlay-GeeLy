@@ -12,6 +12,14 @@ Thanks for your interest in improving DiPlay (Geely adaptation). This repository
 | Geely/ECARX vehicle data, wheel keys, HUD projection, audio routing | This fork |
 | Translations, documentation, site | This fork (translations also appreciated upstream) |
 
+## Branches and releases
+
+- **`main` is the release branch.** It always reflects exactly what the latest `v*` tag publishes; do not commit directly to it.
+- **`tianwen_dev` is the development branch.** Open pull requests against it and land daily work there.
+- **To release:** fast-forward `main` to `tianwen_dev` (`git checkout main && git merge --ff-only tianwen_dev`), then tag `v<version>` on `main` (for example `v0.2.22.5`) and push. CI builds both APKs and publishes the GitHub Release.
+
+简体中文：`main` 是发布分支，`tianwen_dev` 是开发分支。日常提交与 PR 面向 `tianwen_dev`；发布时把 `main` 快进到 `tianwen_dev`，在 `main` 上打 `v<版本>` tag 并推送，CI 自动出包发 Release。
+
 ## Vehicle adaptation workflow (Geely models)
 
 1. Install the latest release of both APKs on the car and save your model preset in **Vehicle data**.
