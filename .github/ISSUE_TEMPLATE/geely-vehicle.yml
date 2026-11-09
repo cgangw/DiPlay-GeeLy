@@ -18,7 +18,7 @@ body:
     validations: {required: true}
   - type: input
     id: versions
-    attributes: {label: DiPlay and GD-Vehicle-Bridge versions, placeholder: 'e.g. DiPlay 0.2.22.4 (44) / Bridge 0.11.25 (49)'}
+    attributes: {label: DiPlay and GD-Vehicle-Bridge versions, placeholder: 'e.g. DiPlay 0.2.22.5 (44) / Bridge 0.2.22.5 (49)'}
     validations: {required: true}
   - type: textarea
     id: symptom
