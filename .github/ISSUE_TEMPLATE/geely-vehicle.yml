@@ -1,0 +1,40 @@
+name: Geely adaptation (vehicle data, HUD, wheel keys)
+description: 'Report a problem specific to the Geely adaptation: vehicle-bridge data, HUD projection, steering keys or Geely audio routing.'
+title: '[Geely] '
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For connection failures (USB/Bluetooth/Wi-Fi, stuck opening CarPlay), use the [Connection problem form](https://github.com/tianwenbro/DiPlay-GeeLy/issues/new?template=connection.yml) instead.
+
+        Before reporting: confirm both APKs (DiPlay and GD-Vehicle-Bridge) are on the latest release, and the model preset is saved in **Vehicle data**. Test while parked. Reports are public — review attached files and remove personal information first.
+  - type: input
+    id: car
+    attributes: {label: Car model, trim and year, placeholder: 'e.g. Geely Xingyue L 2025 Lanxing (KX11)'}
+    validations: {required: true}
+  - type: input
+    id: headunit
+    attributes: {label: Head unit and firmware, placeholder: 'e.g. QTI KX11_A2, Android 11, firmware build if shown'}
+    validations: {required: true}
+  - type: input
+    id: versions
+    attributes: {label: DiPlay and GD-Vehicle-Bridge versions, placeholder: 'e.g. DiPlay 0.2.22.4 (44) / Bridge 0.11.25 (49)'}
+    validations: {required: true}
+  - type: textarea
+    id: symptom
+    attributes:
+      label: What happened
+      description: 'For HUD cards, state which card shows “—” or a wrong value; for wheel keys, which key and which action fails; include the approximate failure time.'
+    validations: {required: true}
+  - type: textarea
+    id: scan
+    attributes:
+      label: Property scan report
+      description: 'Vehicle data → run the scan and attach the CSV. Sentinel values (255 / 65535 / 1.401298464324817E-45) mean unsupported and can be ignored; keep at least the diagnostic channel rows.'
+    validations: {required: false}
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostic report or photos
+      description: 'Settings → Diagnostics → Save diagnostic report (Android 10+ saves to Downloads/DiPlay). A photo of the HUD or Vehicle data page is often enough for display problems.'
+    validations: {required: false}

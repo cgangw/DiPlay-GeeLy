@@ -12,9 +12,13 @@
 >
 > Geely-specific additions: factory ECARX hotspot handling, Geely steering-wheel key mapping and learning, HUD/cluster navigation projection with an editable layout, full-map projection to the cluster, Geely audio routing, and a `vehicle-probe` bridge for factory vehicle properties.
 >
-> Build notes: output APK is `Diplay-GeeLy-v<version>.apk` (debug: `…-hud-test.apk`). The CarPlay accessory identity (`offline-mfi/identity.pk8`, `certificate.p7b`) and the release keystore are not in the repository and must be supplied locally. Still not an Apple-certified product; the bundled identity is experimental.
+> Build notes: output APKs are `Diplay-Geely-25-XingYue-L-v<version>.apk` (debug: `…-hud-test.apk`) and `Geely-25-XingYue-L-Vehicle-Bridge-v<version>.apk`; both versionNames come from `GEELY_VERSION_NAME` in `gradle.properties`. The CarPlay accessory identity (`offline-mfi/identity.pk8`, `certificate.p7b`) and the release keystore are not in the repository and must be supplied locally. Still not an Apple-certified product; the bundled identity is experimental.
 >
 > Sync upstream with `git fetch upstream && git merge upstream/main`.
+>
+> Geely-specific install guide (Simplified Chinese): [docs/GEELY-INSTALL.zh-CN.md](docs/GEELY-INSTALL.zh-CN.md) · Contributing: [CONTRIBUTING.md](CONTRIBUTING.md)
+>
+> **Disclaimer.** This is an independent, experimental adaptation. It is not affiliated with, endorsed by or connected to Geely, ECARX, Apple, BYD or any car manufacturer. All brand and product names are trademarks of their respective owners and are used for identification only. The software is provided "as is" without warranty of any kind — install and use at your own risk. Reverse-engineered vehicle interfaces may change or misbehave with any firmware update; never rely on this app for safety-critical information while driving, and always test while parked.
 
 > **BYD support scope:** These projects focus on BYD cars. They may work on other brands, but other brands are unsupported and there are no plans to add support or fix brand-specific incompatibilities. This branch's Geely adaptation is described above.
 

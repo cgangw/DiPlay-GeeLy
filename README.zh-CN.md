@@ -11,9 +11,13 @@
 >
 > 吉利相关新增：ECARX 原厂热点处理、吉利方向盘按键映射与按键识别、HUD／仪表导航投屏及可编辑布局、全屏地图投至仪表、吉利音频路由，以及用于读取原厂车辆属性的 `vehicle-probe` 桥接。
 >
-> 构建说明：产物名为 `Diplay-GeeLy-v<版本>.apk`（debug 为 `…-hud-test.apk`）。CarPlay 配件身份文件（`offline-mfi/identity.pk8`、`certificate.p7b`）与 release 签名密钥不在仓库内，需要本地自备。本项目仍非 Apple 认证产品，内置身份为实验性身份。
+> 构建说明：产物为 `Diplay-Geely-25-XingYue-L-v<版本>.apk`（debug 为 `…-hud-test.apk`）和 `Geely-25-XingYue-L-Vehicle-Bridge-v<版本>.apk`，两者版本号统一来自 `gradle.properties` 的 `GEELY_VERSION_NAME`。CarPlay 配件身份文件（`offline-mfi/identity.pk8`、`certificate.p7b`）与 release 签名密钥不在仓库内，需要本地自备。本项目仍非 Apple 认证产品，内置身份为实验性身份。
 >
 > 同步上游：`git fetch upstream && git merge upstream/main`。
+>
+> 吉利适配安装指南（简体中文）：[docs/GEELY-INSTALL.zh-CN.md](docs/GEELY-INSTALL.zh-CN.md) · 参与贡献：[CONTRIBUTING.md](CONTRIBUTING.md)
+>
+> **免责声明。** 本项目是独立的实验性适配版本，与吉利汽车、亿咖通（ECARX）、Apple、比亚迪或任何车企均无隶属、认可或合作关系。所有品牌与产品名称均为其各自所有者的商标，仅作识别用途。软件按“原样”提供，不作任何形式的担保——安装与使用风险自负。逆向得到的车机接口可能随任何固件更新而改变或表现异常；驾驶时切勿依赖本应用显示安全关键信息，请务必停车测试。
 
 > 这些项目专注于比亚迪汽车。它们可能在其他品牌上运行，但其他品牌不在支持范围内，也没有增加支持或修复其品牌特定兼容性问题的计划。本分支的吉利适配见上方说明。
 
