@@ -89,6 +89,30 @@ class UpdateCatalogTest {
     }
 
     @Test
+    fun picksTheAppApkWhenTheBridgeApkIsAlsoPublished() {
+        val json = """
+            [{"tag_name": "v0.2.22.4", "draft": false, "assets": [
+              {"name": "Geely-25-XingYue-L-Vehicle-Bridge-v0.2.22.4.apk", "browser_download_url": "${GITHUB}Geely-25-XingYue-L-Vehicle-Bridge-v0.2.22.4.apk"},
+              {"name": "Diplay-Geely-25-XingYue-L-v0.2.22.4.apk", "browser_download_url": "${GITHUB}Diplay-Geely-25-XingYue-L-v0.2.22.4.apk"},
+              {"name": "SHA256SUMS.txt", "browser_download_url": "${GITHUB}SHA256SUMS.txt"}
+            ]}]
+        """.trimIndent()
+        val release = UpdateCatalog.parse(json)
+        assertEquals("Diplay-Geely-25-XingYue-L-v0.2.22.4.apk", release?.apkName)
+    }
+
+    @Test
+    fun returnsNullWhenOnlyTheBridgeApkIsPublished() {
+        val json = """
+            [{"tag_name": "v0.2.22.4", "draft": false, "assets": [
+              {"name": "Geely-25-XingYue-L-Vehicle-Bridge-v0.2.22.4.apk", "browser_download_url": "${GITHUB}Geely-25-XingYue-L-Vehicle-Bridge-v0.2.22.4.apk"},
+              {"name": "SHA256SUMS.txt", "browser_download_url": "${GITHUB}SHA256SUMS.txt"}
+            ]}]
+        """.trimIndent()
+        assertNull(UpdateCatalog.parse(json))
+    }
+
+    @Test
     fun refusesAnApkNameThatLeavesTheDownloadFolder() {
         for (name in listOf("../../evil.apk", "..\\evil.apk", "/data/evil.apk", "sub/evil.apk", ".apk", "evil.apk\u0000.txt.apk")) {
             assertNull(name, UpdateCatalog.parse(releaseWith(apkName = name, apkUrl = GITHUB + "x.apk")))

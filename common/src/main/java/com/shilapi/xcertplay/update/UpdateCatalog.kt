@@ -13,6 +13,9 @@ internal data class UpdateRelease(
 
 internal object UpdateCatalog {
     internal const val CHECKSUMS_FILE = "SHA256SUMS.txt"
+    // The update installs over the DiPlay app, so only the app APK is offered.
+    // The vehicle bridge is a separate package and its asset must never be downloaded here.
+    private const val APP_APK_PREFIX = "Diplay"
     private const val DOWNLOAD_HOST = "github.com"
     // The name becomes a file in the cache folder, so it can hold no path.
     private val APK_NAME = Regex("[A-Za-z0-9][A-Za-z0-9._-]*\\.apk")
@@ -38,7 +41,7 @@ internal object UpdateCatalog {
                 val name = asset.optString("name")
                 val url = asset.optString("browser_download_url")
                 if (!isDownloadUrl(url)) continue
-                if (APK_NAME.matches(name)) {
+                if (APK_NAME.matches(name) && name.startsWith(APP_APK_PREFIX, ignoreCase = true)) {
                     apkName = name
                     apkUrl = url
                 }

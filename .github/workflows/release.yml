@@ -68,10 +68,18 @@ jobs:
             = "$("$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --print-certs "$bridge" | grep 'SHA-256 digest')"
           unzip -l "$apk" | grep 'assets/offline-mfi/identity.pk8'
           unzip -l "$apk" | grep 'assets/offline-mfi/certificate.p7b'
+      - name: Generate SHA256 checksums for the release assets
+        run: |
+          set -euo pipefail
+          {
+            (cd mobile/build/outputs/apk/release && sha256sum *.apk)
+            (cd vehicle-bridge/build/outputs/apk/release && sha256sum *.apk)
+          } > SHA256SUMS.txt
       - uses: actions/upload-artifact@v4
         with:
           name: Diplay-GeeLy-release
           path: |
+            SHA256SUMS.txt
             mobile/build/outputs/apk/release/*.apk
             vehicle-bridge/build/outputs/apk/release/*.apk
           if-no-files-found: error
@@ -80,6 +88,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
+            SHA256SUMS.txt
             mobile/build/outputs/apk/release/*.apk
             vehicle-bridge/build/outputs/apk/release/*.apk
           generate_release_notes: true
