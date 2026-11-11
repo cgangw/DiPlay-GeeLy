@@ -23,7 +23,7 @@
 
 > 这些项目专注于比亚迪汽车。它们可能在其他品牌上运行，但其他品牌不在支持范围内，也没有增加支持或修复其品牌特定兼容性问题的计划。本分支的吉利适配见上方说明。
 
-[下载与中文网站](https://shihabal3amri.github.io/DiPlay/zh-Hans/) · [0.2.22 版本](https://github.com/shihabal3amri/DiPlay/releases/tag/v0.2.22) · [完整说明](README.md) · [报告问题](https://github.com/shihabal3amri/DiPlay/issues/new/choose)
+[下载与中文网站](https://tianwenbro.github.io/DiPlay-GeeLy/) · [最新版本](https://github.com/tianwenbro/DiPlay-GeeLy/releases/latest) · [完整说明](README.md) · [报告问题](https://github.com/tianwenbro/DiPlay-GeeLy/issues/new/choose)
 
 ## 0.2.22 — 公开预览版
 

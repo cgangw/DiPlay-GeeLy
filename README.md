@@ -22,7 +22,7 @@
 
 > **BYD support scope:** These projects focus on BYD cars. They may work on other brands, but other brands are unsupported and there are no plans to add support or fix brand-specific incompatibilities. This branch's Geely adaptation is described above.
 
-[Download & website](https://shihabal3amri.github.io/DiPlay/) · [Release](https://github.com/shihabal3amri/DiPlay/releases/tag/v0.2.22) · [Report a problem](https://github.com/shihabal3amri/DiPlay/issues/new/choose)
+[Download & website](https://tianwenbro.github.io/DiPlay-GeeLy/) · [Release](https://github.com/tianwenbro/DiPlay-GeeLy/releases/latest) · [Report a problem](https://github.com/tianwenbro/DiPlay-GeeLy/issues/new/choose)
 
 ![DiPlay home](site/assets/home.png)
 
