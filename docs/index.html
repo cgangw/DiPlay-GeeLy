@@ -6,96 +6,186 @@
 <title>DiPlay-GeeLy · 吉利星越L CarPlay 投屏适配</title>
 <style>
   :root { color-scheme: light dark; }
-  body { max-width: 880px; margin: 0 auto; padding: 28px 20px 72px;
+  * { box-sizing: border-box; }
+  body { max-width: 880px; margin: 0 auto; padding: 24px 22px 80px;
          font-family: -apple-system, "Segoe UI", "Microsoft YaHei", "PingFang SC", sans-serif;
-         line-height: 1.75; }
-  h1 { font-size: 1.65rem; margin: 0 0 .3rem; }
-  .sub { color: #666; margin-top: 0; }
-  h2 { margin-top: 2.2rem; border-bottom: 1px solid #ddd; padding-bottom: .35rem; font-size: 1.2rem; }
+         line-height: 1.8; color: #1c1e21; background: #fff; }
+  .top { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .logo { font-weight: 800; font-size: 1.15rem; letter-spacing: .5px; }
+  .logo .gold { color: #b8860b; }
+  #langBtn { border: 1px solid #d0d4dc; background: #f6f7f9; color: #333;
+             border-radius: 999px; padding: 6px 18px; font-size: .9rem; cursor: pointer; }
+  #langBtn:hover { background: #eceef2; }
+  .hero { text-align: center; padding: 44px 0 10px; }
+  .badges { margin-bottom: 22px; }
+  .badge { display: inline-block; padding: 3px 13px; border-radius: 999px; font-size: .84rem;
+           background: #eef3ff; color: #2456c4; margin: 0 5px 8px 0; border: 1px solid #dbe4f8; }
+  .badge.ok { background: #e8f7ef; color: #12744a; border-color: #cdeeda; }
+  h1 { font-size: 2.1rem; line-height: 1.3; margin: 0 0 .6rem; }
+  .sub { font-size: 1.06rem; color: #5b6470; margin: 0 auto 30px; max-width: 640px; }
+  .cta { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+  .btn { display: inline-block; padding: 11px 26px; border-radius: 12px; font-weight: 700;
+         font-size: 1rem; text-decoration: none; }
+  .btn-pri { background: #2456c4; color: #fff !important; box-shadow: 0 6px 16px rgba(36,86,196,.25); }
+  .btn-pri:hover { background: #1d49ab; }
+  .btn-sec { background: #21343f; color: #fff !important; box-shadow: 0 6px 16px rgba(33,52,63,.2); }
+  .btn-sec:hover { background: #16242d; }
+  .btn-ghost { border: 1.5px solid #d0d4dc; color: #333 !important; background: #fff; }
+  .btn-ghost:hover { background: #f6f7f9; }
+  .note { color: #5b6470; font-size: .92rem; margin-top: 16px; }
+  h2 { margin-top: 3rem; border-bottom: 1px solid #e6e8ec; padding-bottom: .4rem;
+       font-size: 1.35rem; }
+  h2 .num { color: #b8860b; font-weight: 800; margin-right: 10px; }
+  ol.steps { padding-left: 1.4rem; }
+  ol.steps li { margin: .55rem 0; }
+  .hl { background: #fff8e1; padding: 1px 5px; border-radius: 4px; font-weight: 700; }
   a { color: #0969da; text-decoration: none; }
   a:hover { text-decoration: underline; }
-  .badge { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: .82rem;
-           background: #eef3ff; color: #2456c4; margin: 0 6px 6px 0; }
-  .warn { background: #fff8e6; border: 1px solid #f0d58c; border-radius: 10px; padding: 14px 18px; }
-  ul.docs { columns: 2; column-gap: 32px; }
-  @media (max-width: 640px) { ul.docs { columns: 1; } }
-  footer { margin-top: 3rem; color: #888; font-size: .86rem; border-top: 1px solid #eee; padding-top: 1rem; }
+  table.apk { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: .95rem; }
+  table.apk th, table.apk td { border: 1px solid #e2e5ea; padding: 10px 14px; text-align: left; }
+  table.apk th { background: #f6f7f9; }
+  .warn { background: #fff8e6; border: 1px solid #f0d58c; border-radius: 12px;
+          padding: 14px 20px; font-size: .93rem; }
+  footer { margin-top: 3rem; color: #8a909a; font-size: .86rem; border-top: 1px solid #e6e8ec;
+           padding-top: 1rem; }
   code { background: #f3f4f6; padding: 1px 5px; border-radius: 4px; font-size: .9em; }
+  [hidden] { display: none !important; }
 </style>
 </head>
 <body>
 
-<h1>DiPlay-GeeLy</h1>
-<p class="sub">在吉利车机上运行 DiPlay（苹果 CarPlay 投屏），针对 <strong>吉利星越L 2025 款 揽星（KX11 平台）</strong>做深度适配。</p>
-
-<p>
-  <span class="badge">适配车型：星越L 25款揽星</span>
-  <span class="badge">车机 KX11_A2 · ECARX / Android 11</span>
-  <span class="badge">有线 CarPlay / 方控 / HUD 投屏 已实车验证</span>
-  <span class="badge">GPL-3.0</span>
-</p>
-
-<h2>适配说明</h2>
-<ul>
-  <li><strong>本项目主要面向吉利星越L 2025 款 揽星（车机型号 KX11_A2，ECARX/OneOS，Android 11）</strong>，已在该车型上完成实车安装与验证：有线 CarPlay 连接与音视频、方向盘媒体/语音按键（经吉利 OneOS 输入服务，不依赖 ADB）、HUD 投屏（导航与时间）。</li>
-  <li>车辆数据（车速等）读取能力随版本持续完善；HUD 投屏需先在车机侧开启原厂「HUD 投屏」。</li>
-  <li>其他吉利/ECARX 车机可以尝试安装，但未做完整验证；非吉利车型建议使用上游原版 DiPlay。</li>
-</ul>
-
-<h2>安装（简明步骤）</h2>
-<ol>
-  <li>从本仓库 <a href="https://github.com/tianwenbro/DiPlay-GeeLy/releases">Releases</a> 下载两个 APK：主应用（Diplay-Geely-25-XingYue-L）与车辆数据车桥（Geely-25-XingYue-L-Vehicle-Bridge）。</li>
-  <li>先安装<strong>车桥 APK</strong>，再安装<strong>主应用 APK</strong>；两包签名一致，直接覆盖升级即可，请勿卸载重装（会丢配置）。</li>
-  <li>打开主应用、授予所需权限，USB 连接 iPhone 即可使用 CarPlay。无线方式请先完成一次蓝牙配对，再按设置里的连接引导操作。</li>
-</ol>
-<p>详细步骤与常见问题见 <a href="GEELY-INSTALL.zh-CN.html">吉利安装说明（中文）</a>；遇到问题请通过仓库的 <a href="https://github.com/tianwenbro/DiPlay-GeeLy/issues/new/choose">Issue 模板</a>反馈（含车型信息收集）。</p>
-
-<h2>文档索引</h2>
-
-<h3 style="margin-bottom:.4rem">吉利适配文档（简体中文）</h3>
-<ul>
-  <li><a href="GEELY-INSTALL.zh-CN.html">吉利安装说明（星越 L · KX11 安装、车桥配置与排障）</a></li>
-  <li><a href="https://github.com/tianwenbro/DiPlay-GeeLy/blob/main/CONTRIBUTING.md">贡献指南 CONTRIBUTING（分支模型与适配工作流，仓库根目录，GitHub 打开）</a></li>
-</ul>
-
-<h3 style="margin-bottom:.4rem">通用文档（继承自上游，英文）</h3>
-<p style="color:#666;margin:.2rem 0 .6rem">以下文档面向上游 DiPlay 的通用场景（含比亚迪车型内容）。</p>
-<ul class="docs">
-  <li><a href="INSTALL.html">安装说明 INSTALL</a></li>
-  <li><a href="CONNECTION_SETUP.html">连接设置 CONNECTION SETUP</a></li>
-  <li><a href="EXISTING_WIFI.html">现有 Wi-Fi / 同一局域网</a></li>
-  <li><a href="WIRELESS_HOTSPOT_JOIN.html">无线热点加入问题</a></li>
-  <li><a href="COMPATIBILITY.html">兼容性 COMPATIBILITY</a></li>
-  <li><a href="PRIVACY.html">隐私说明 PRIVACY</a></li>
-  <li><a href="TESTING.html">测试说明 TESTING</a></li>
-  <li><a href="VALIDATION.html">验证记录 VALIDATION</a></li>
-  <li><a href="BUILD.html">构建说明 BUILD</a></li>
-  <li><a href="THIRD_PARTY_NOTICES.html">第三方声明 THIRD PARTY NOTICES</a></li>
-</ul>
-
-<h2>开源声明</h2>
-<ul>
-  <li>本项目基于开源项目 <a href="https://github.com/shihabal3amri/DiPlay">DiPlay</a>（作者 shihabal3amri）分叉开发；吉利适配相关的集成思路与部分代码来源于 <a href="https://github.com/carlito12345/DiPlay">carlito12345 的 DiPlay fork</a>。</li>
-  <li>本项目以 <strong>GNU GPL-3.0</strong> 许可证发布，详见 <a href="https://github.com/tianwenbro/DiPlay-GeeLy/blob/main/LICENSE">LICENSE</a> 与 <a href="THIRD_PARTY_NOTICES.html">第三方声明</a>。再分发与修改须遵守 GPL-3.0（保留版权声明、公开源码）。</li>
-  <li>仓库不包含吉利汽车、亿咖通（ECARX）、苹果（Apple）的任何专有代码或私钥材料；CarPlay 连接所需的身份材料须由使用者自行合法获取并自负责任。</li>
-  <li>车辆数据车桥（Vehicle Bridge）为独立实现，对车辆属性仅做<strong>只读</strong>读取，不向车辆发送控制指令。</li>
-</ul>
-
-<h2>免责声明</h2>
-<div class="warn">
-  <ul>
-    <li>本项目是非官方第三方项目，与吉利汽车、亿咖通（ECARX）、苹果公司（Apple）均无关联，也未获其背书、授权或支持。CarPlay 是 Apple Inc. 的商标，相关名称仅作说明用途。</li>
-    <li>向车机侧载（sideload）第三方应用存在风险：可能影响车机稳定性、原厂功能、后续 OTA 升级甚至整车质保；请自行评估并在知情前提下使用。</li>
-    <li>行车安全第一：请勿在行驶中操作本应用或车机；请遵守所在地区交通法规；应用显示的导航、车速等信息仅供参考，一切以车辆仪表与交通信号为准。</li>
-    <li>请仅在你拥有或已取得明确授权的车辆上安装使用；严禁用于任何非法用途。</li>
-    <li>本软件按「现状（AS IS）」提供，不附带任何明示或暗示的担保；因使用或无法使用本软件而产生的任何直接或间接损失，作者与贡献者概不负责。</li>
-  </ul>
+<div class="top">
+  <div class="logo">DiPlay<span style="color:#5b6470"> · </span><span class="gold">GeeLy</span></div>
+  <button id="langBtn" type="button">EN</button>
 </div>
 
-<footer>
-  <p>仓库：<a href="https://github.com/tianwenbro/DiPlay-GeeLy">github.com/tianwenbro/DiPlay-GeeLy</a> · 适配车型：吉利星越L 2025 款 揽星（KX11）</p>
-  <p>许可：GPL-3.0 · 问题反馈：<a href="https://github.com/tianwenbro/DiPlay-GeeLy/issues">Issues</a></p>
-</footer>
+<!-- ==================== 中文（默认） ==================== -->
+<div id="lang-zh">
+  <div class="hero">
+    <div class="badges">
+      <span class="badge ok">✔ 星越L 25款揽星 · KX11 实车验证</span>
+      <span class="badge">v0.2.22.5</span>
+      <span class="badge">GPL-3.0 开源</span>
+      <span class="badge">免越狱 · 免改装</span>
+    </div>
+    <h1>你的 iPhone，<br>在星越L 上安家。</h1>
+    <p class="sub">把有线 / 无线 CarPlay 带进吉利星越L（KX11）车机：方向盘按键直控、车速续航温度实时显示、导航投进仪表 HUD。</p>
+    <div class="cta">
+      <a class="btn btn-pri" href="https://github.com/tianwenbro/DiPlay-GeeLy/releases/download/v0.2.22.5/Diplay-Geely-25-XingYue-L-v0.2.22.5.apk">下载主应用 APK ↓</a>
+      <a class="btn btn-sec" href="https://github.com/tianwenbro/DiPlay-GeeLy/releases/download/v0.2.22.5/Geely-25-XingYue-L-Vehicle-Bridge-v0.2.22.5.apk">下载车桥 APK ↓</a>
+      <a class="btn btn-ghost" href="#install">安装步骤</a>
+    </div>
+    <p class="note">安装到<strong>车机</strong>，而不是 iPhone · Android 11 车机 · 有线与无线均支持</p>
+  </div>
 
+  <h2 id="install"><span class="num">01</span>安装到星越L（三步上车）</h2>
+  <ol class="steps">
+    <li><strong>下载并安装两个 APK</strong>：点击上方按钮，或到 <a href="https://github.com/tianwenbro/DiPlay-GeeLy/releases">Releases</a> 页下载；用 <span class="hl">U 盘</span>或 <code>adb install</code> 装进车机（车机浏览器无法安装）。<strong>先装车桥，再装主应用</strong>。</li>
+    <li><strong>配置车辆</strong>：打开主应用，授予蓝牙 / 位置 / 麦克风权限；在「车辆数据」页开启开发者选项（版本号连点 7 次），选择车辆 <span class="hl">星越 L · KX11（25 揽星）</span>并保存，车桥连接状态显示 READY 即正常。</li>
+    <li><strong>连接 iPhone</strong>：USB 数据线连接即插即用；无线方式先连车机内置热点，完成一次蓝牙配对，再按设置里的连接引导操作。</li>
+  </ol>
+  <p>方控按键、车况数据与 HUD 投屏在连接成功后自动生效。详细图文（含排障表）见 <a href="GEELY-INSTALL.zh-CN.html">吉利安装说明（简体中文）</a>。</p>
+
+  <h2><span class="num">02</span>下载与更新</h2>
+  <table class="apk">
+    <tr><th>文件</th><th>说明</th></tr>
+    <tr><td><a href="https://github.com/tianwenbro/DiPlay-GeeLy/releases/download/v0.2.22.5/Diplay-Geely-25-XingYue-L-v0.2.22.5.apk">Diplay-Geely-25-XingYue-L-v0.2.22.5.apk</a></td><td>主应用（CarPlay 投屏）</td></tr>
+    <tr><td><a href="https://github.com/tianwenbro/DiPlay-GeeLy/releases/download/v0.2.22.5/Geely-25-XingYue-L-Vehicle-Bridge-v0.2.22.5.apk">Geely-25-XingYue-L-Vehicle-Bridge-v0.2.22.5.apk</a></td><td>车辆数据车桥（只读车速 / 续航 / 温度）</td></tr>
+    <tr><td><a href="https://github.com/tianwenbro/DiPlay-GeeLy/releases/download/v0.2.22.5/SHA256SUMS.txt">SHA256SUMS.txt</a></td><td>发布包校验和</td></tr>
+  </table>
+  <p>升级直接覆盖安装即可保留配置（两包签名一致），<strong>请勿卸载重装</strong>（会丢配置）。历史版本与校验文件见 <a href="https://github.com/tianwenbro/DiPlay-GeeLy/releases">Releases</a>。</p>
+
+  <h2><span class="num">03</span>适用范围</h2>
+  <ul>
+    <li>本项目面向<strong>吉利星越L 2025 款 揽星</strong>（车机 KX11_A2 · ECARX / OneOS · Android 11），已在实车完成安装与验证。</li>
+    <li>其他吉利 / ECARX 车机可以尝试安装，但未做完整验证；<strong>非吉利车型请使用<a href="https://github.com/shihabal3amri/DiPlay">上游原版 DiPlay</a></strong>。</li>
+    <li>基于 <a href="https://github.com/shihabal3amri/DiPlay">DiPlay</a>（GPL-3.0）与 <a href="https://github.com/carlito12345/DiPlay">carlito12345 fork</a> 的吉利集成，详见 <a href="THIRD_PARTY_NOTICES.html">第三方声明</a>。</li>
+  </ul>
+
+  <h2>免责声明</h2>
+  <div class="warn">
+    本项目为非官方第三方项目，与吉利汽车、亿咖通（ECARX）、苹果（Apple）无关联、未获背书。CarPlay 是 Apple Inc. 的商标。向车机侧载第三方应用可能影响车机稳定性、OTA 与整车质保，请自行评估。<strong>请停车操作，行车安全第一</strong>；应用显示的信息仅供参考，以车辆仪表与交通信号为准。软件按「现状」提供，不附带任何担保。
+  </div>
+
+  <footer>
+    <p>仓库：<a href="https://github.com/tianwenbro/DiPlay-GeeLy">github.com/tianwenbro/DiPlay-GeeLy</a> · 问题反馈：<a href="https://github.com/tianwenbro/DiPlay-GeeLy/issues/new/choose">Issues</a></p>
+    <p>许可 GPL-3.0 · 适配车型：吉利星越L 2025 款 揽星（KX11）</p>
+  </footer>
+</div>
+
+<!-- ==================== English ==================== -->
+<div id="lang-en" hidden>
+  <div class="hero">
+    <div class="badges">
+      <span class="badge ok">✔ Verified on Xingyue L 2025 (KX11)</span>
+      <span class="badge">v0.2.22.5</span>
+      <span class="badge">GPL-3.0</span>
+      <span class="badge">No jailbreak · No hardware mods</span>
+    </div>
+    <h1>Your iPhone,<br>at home in your Xingyue L.</h1>
+    <p class="sub">Wired and wireless CarPlay for the Geely Xingyue L (KX11) head unit: steering-wheel controls, live speed / range / temperature, and turn-by-turn HUD in the instrument cluster.</p>
+    <div class="cta">
+      <a class="btn btn-pri" href="https://github.com/tianwenbro/DiPlay-GeeLy/releases/download/v0.2.22.5/Diplay-Geely-25-XingYue-L-v0.2.22.5.apk">Download main APK ↓</a>
+      <a class="btn btn-sec" href="https://github.com/tianwenbro/DiPlay-GeeLy/releases/download/v0.2.22.5/Geely-25-XingYue-L-Vehicle-Bridge-v0.2.22.5.apk">Download bridge APK ↓</a>
+      <a class="btn btn-ghost" href="#install">Install steps</a>
+    </div>
+    <p class="note">Install on the <strong>head unit</strong>, not the iPhone · Android 11 head unit · USB and wireless</p>
+  </div>
+
+  <h2 id="install"><span class="num">01</span>Install on the Xingyue L (3 steps)</h2>
+  <ol class="steps">
+    <li><strong>Download and install both APKs</strong> (buttons above, or the <a href="https://github.com/tianwenbro/DiPlay-GeeLy/releases">Releases</a> page) via <span class="hl">USB drive</span> or <code>adb install</code> — the head-unit browser cannot install them. <strong>Install the bridge first, then the main app.</strong></li>
+    <li><strong>Configure the car</strong>: open the app, grant Bluetooth / location / microphone permissions; in Vehicle data, unlock developer options (tap the version 7 times), select <span class="hl">Xingyue L · KX11 (2025)</span> and save. Bridge status should show READY.</li>
+    <li><strong>Connect the iPhone</strong>: plug in USB and it just works; for wireless, join the car's built-in hotspot, pair Bluetooth once, then follow the in-app connection guide.</li>
+  </ol>
+  <p>Wheel keys, vehicle data and HUD activate automatically once connected. Full illustrated guide: <a href="GEELY-INSTALL.zh-CN.html">Geely install guide (Simplified Chinese)</a>.</p>
+
+  <h2><span class="num">02</span>Downloads &amp; updates</h2>
+  <table class="apk">
+    <tr><th>File</th><th>Description</th></tr>
+    <tr><td><a href="https://github.com/tianwenbro/DiPlay-GeeLy/releases/download/v0.2.22.5/Diplay-Geely-25-XingYue-L-v0.2.22.5.apk">Diplay-Geely-25-XingYue-L-v0.2.22.5.apk</a></td><td>Main app (CarPlay projection)</td></tr>
+    <tr><td><a href="https://github.com/tianwenbro/DiPlay-GeeLy/releases/download/v0.2.22.5/Geely-25-XingYue-L-Vehicle-Bridge-v0.2.22.5.apk">Geely-25-XingYue-L-Vehicle-Bridge-v0.2.22.5.apk</a></td><td>Vehicle bridge (read-only speed / range / temperature)</td></tr>
+    <tr><td><a href="https://github.com/tianwenbro/DiPlay-GeeLy/releases/download/v0.2.22.5/SHA256SUMS.txt">SHA256SUMS.txt</a></td><td>Release checksums</td></tr>
+  </table>
+  <p>Upgrades install over the previous release and keep settings (both packages share one signature). <strong>Do not uninstall first</strong> — that loses settings. Older builds: <a href="https://github.com/tianwenbro/DiPlay-GeeLy/releases">Releases</a>.</p>
+
+  <h2><span class="num">03</span>Scope</h2>
+  <ul>
+    <li>Verified in-vehicle on the <strong>Geely Xingyue L 2025 (KX11_A2 · ECARX / OneOS · Android 11)</strong>.</li>
+    <li>Other Geely / ECARX units may work but are unverified; <strong>for non-Geely cars use <a href="https://github.com/shihabal3amri/DiPlay">upstream DiPlay</a></strong>.</li>
+    <li>Built on <a href="https://github.com/shihabal3amri/DiPlay">DiPlay</a> (GPL-3.0) with Geely integration from the <a href="https://github.com/carlito12345/DiPlay">carlito12345 fork</a>; see <a href="THIRD_PARTY_NOTICES.html">third-party notices</a>.</li>
+  </ul>
+
+  <h2>Disclaimer</h2>
+  <div class="warn">
+    Unofficial third-party project, not affiliated with or endorsed by Geely, ECARX or Apple. CarPlay is a trademark of Apple Inc. Sideloading third-party apps on the head unit may affect stability, OTA updates or vehicle warranty — evaluate at your own risk. <strong>Operate only while parked</strong>; displayed information is a reference only. Provided AS IS, without warranty of any kind.
+  </div>
+
+  <footer>
+    <p>Repo: <a href="https://github.com/tianwenbro/DiPlay-GeeLy">github.com/tianwenbro/DiPlay-GeeLy</a> · Issues: <a href="https://github.com/tianwenbro/DiPlay-GeeLy/issues/new/choose">report a problem</a></p>
+    <p>GPL-3.0 · Target: Geely Xingyue L 2025 (KX11)</p>
+  </footer>
+</div>
+
+<script>
+  (function () {
+    var zh = document.getElementById('lang-zh'), en = document.getElementById('lang-en'),
+        btn = document.getElementById('langBtn');
+    function apply(lang) {
+      var isEn = lang === 'en';
+      zh.hidden = isEn; en.hidden = !isEn;
+      btn.textContent = isEn ? '中文' : 'EN';
+      document.documentElement.lang = isEn ? 'en' : 'zh-CN';
+      try { localStorage.setItem('dg-lang', lang); } catch (e) {}
+    }
+    var forced = new URLSearchParams(location.search).get('lang');
+    var saved = null;
+    try { saved = localStorage.getItem('dg-lang'); } catch (e) {}
+    apply(forced || saved || 'zh');
+    btn.addEventListener('click', function () {
+      apply(document.documentElement.lang === 'en' ? 'zh' : 'en');
+    });
+  })();
+</script>
 </body>
 </html>
