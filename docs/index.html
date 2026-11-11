@@ -48,26 +48,34 @@
   <li>先安装<strong>车桥 APK</strong>，再安装<strong>主应用 APK</strong>；两包签名一致，直接覆盖升级即可，请勿卸载重装（会丢配置）。</li>
   <li>打开主应用、授予所需权限，USB 连接 iPhone 即可使用 CarPlay。无线方式请先完成一次蓝牙配对，再按设置里的连接引导操作。</li>
 </ol>
-<p>详细步骤与常见问题见 <a href="GEELY-INSTALL.zh-CN.html">吉利安装说明（中文）</a> 与 <a href="INSTALL.html">INSTALL</a>；遇到问题请通过仓库的 Issue 模板反馈（含车型信息收集）。</p>
+<p>详细步骤与常见问题见 <a href="https://github.com/tianwenbro/DiPlay-GeeLy/blob/main/docs/GEELY-INSTALL.zh-CN.md">吉利安装说明（中文）</a>；遇到问题请通过仓库的 <a href="https://github.com/tianwenbro/DiPlay-GeeLy/issues/new/choose">Issue 模板</a>反馈（含车型信息收集）。</p>
 
 <h2>文档索引</h2>
+
+<h3 style="margin-bottom:.4rem">吉利适配文档（简体中文）</h3>
+<ul>
+  <li><a href="https://github.com/tianwenbro/DiPlay-GeeLy/blob/main/docs/GEELY-INSTALL.zh-CN.md">吉利安装说明（星越 L · KX11 安装、车桥配置与排障）</a></li>
+  <li><a href="https://github.com/tianwenbro/DiPlay-GeeLy/blob/main/CONTRIBUTING.md">贡献指南 CONTRIBUTING（分支模型与适配工作流）</a></li>
+</ul>
+
+<h3 style="margin-bottom:.4rem">通用文档（继承自上游，英文）</h3>
+<p style="color:#666;margin:.2rem 0 .6rem">以下文档面向上游 DiPlay 的通用场景（含比亚迪车型内容），链接打开为 GitHub 渲染页。</p>
 <ul class="docs">
-  <li><a href="GEELY-INSTALL.zh-CN.html">吉利安装说明（zh-CN）</a></li>
-  <li><a href="INSTALL.html">安装说明 INSTALL</a></li>
-  <li><a href="CONNECTION_SETUP.html">连接设置 CONNECTION SETUP</a></li>
-  <li><a href="EXISTING_WIFI.html">现有 Wi-Fi / 同一局域网</a></li>
-  <li><a href="WIRELESS_HOTSPOT_JOIN.html">无线热点加入问题</a></li>
-  <li><a href="COMPATIBILITY.html">兼容性 COMPATIBILITY</a></li>
-  <li><a href="PRIVACY.html">隐私说明 PRIVACY</a></li>
-  <li><a href="TESTING.html">测试说明 TESTING</a></li>
-  <li><a href="VALIDATION.html">验证记录 VALIDATION</a></li>
-  <li><a href="THIRD_PARTY_NOTICES.html">第三方声明</a></li>
+  <li><a href="https://github.com/tianwenbro/DiPlay-GeeLy/blob/main/docs/INSTALL.md">安装说明 INSTALL</a></li>
+  <li><a href="https://github.com/tianwenbro/DiPlay-GeeLy/blob/main/docs/CONNECTION_SETUP.md">连接设置 CONNECTION SETUP</a></li>
+  <li><a href="https://github.com/tianwenbro/DiPlay-GeeLy/blob/main/docs/EXISTING_WIFI.md">现有 Wi-Fi / 同一局域网</a></li>
+  <li><a href="https://github.com/tianwenbro/DiPlay-GeeLy/blob/main/docs/WIRELESS_HOTSPOT_JOIN.md">无线热点加入问题</a></li>
+  <li><a href="https://github.com/tianwenbro/DiPlay-GeeLy/blob/main/docs/COMPATIBILITY.md">兼容性 COMPATIBILITY</a></li>
+  <li><a href="https://github.com/tianwenbro/DiPlay-GeeLy/blob/main/docs/PRIVACY.md">隐私说明 PRIVACY</a></li>
+  <li><a href="https://github.com/tianwenbro/DiPlay-GeeLy/blob/main/docs/TESTING.md">测试说明 TESTING</a></li>
+  <li><a href="https://github.com/tianwenbro/DiPlay-GeeLy/blob/main/docs/BUILD.md">构建说明 BUILD</a></li>
+  <li><a href="https://github.com/tianwenbro/DiPlay-GeeLy/blob/main/docs/THIRD_PARTY_NOTICES.md">第三方声明 THIRD PARTY NOTICES</a></li>
 </ul>
 
 <h2>开源声明</h2>
 <ul>
   <li>本项目基于开源项目 <a href="https://github.com/shihabal3amri/DiPlay">DiPlay</a>（作者 shihabal3amri）分叉开发；吉利适配相关的集成思路与部分代码来源于 <a href="https://github.com/carlito12345/DiPlay">carlito12345 的 DiPlay fork</a>。</li>
-  <li>本项目以 <strong>GNU GPL-3.0</strong> 许可证发布，详见 <a href="https://github.com/tianwenbro/DiPlay-GeeLy/blob/main/LICENSE">LICENSE</a> 与 <a href="THIRD_PARTY_NOTICES.html">第三方声明</a>。再分发与修改须遵守 GPL-3.0（保留版权声明、公开源码）。</li>
+  <li>本项目以 <strong>GNU GPL-3.0</strong> 许可证发布，详见 <a href="https://github.com/tianwenbro/DiPlay-GeeLy/blob/main/LICENSE">LICENSE</a> 与 <a href="https://github.com/tianwenbro/DiPlay-GeeLy/blob/main/docs/THIRD_PARTY_NOTICES.md">第三方声明</a>。再分发与修改须遵守 GPL-3.0（保留版权声明、公开源码）。</li>
   <li>仓库不包含吉利汽车、亿咖通（ECARX）、苹果（Apple）的任何专有代码或私钥材料；CarPlay 连接所需的身份材料须由使用者自行合法获取并自负责任。</li>
   <li>车辆数据车桥（Vehicle Bridge）为独立实现，对车辆属性仅做<strong>只读</strong>读取，不向车辆发送控制指令。</li>
 </ul>
