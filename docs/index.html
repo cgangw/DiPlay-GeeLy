@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DiPlay-GeeLy · 吉利星越L CarPlay 投屏适配</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { max-width: 880px; margin: 0 auto; padding: 28px 20px 72px;
+         font-family: -apple-system, "Segoe UI", "Microsoft YaHei", "PingFang SC", sans-serif;
+         line-height: 1.75; }
+  h1 { font-size: 1.65rem; margin: 0 0 .3rem; }
+  .sub { color: #666; margin-top: 0; }
+  h2 { margin-top: 2.2rem; border-bottom: 1px solid #ddd; padding-bottom: .35rem; font-size: 1.2rem; }
+  a { color: #0969da; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .badge { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: .82rem;
+           background: #eef3ff; color: #2456c4; margin: 0 6px 6px 0; }
+  .warn { background: #fff8e6; border: 1px solid #f0d58c; border-radius: 10px; padding: 14px 18px; }
+  ul.docs { columns: 2; column-gap: 32px; }
+  @media (max-width: 640px) { ul.docs { columns: 1; } }
+  footer { margin-top: 3rem; color: #888; font-size: .86rem; border-top: 1px solid #eee; padding-top: 1rem; }
+  code { background: #f3f4f6; padding: 1px 5px; border-radius: 4px; font-size: .9em; }
+</style>
+</head>
+<body>
+
+<h1>DiPlay-GeeLy</h1>
+<p class="sub">在吉利车机上运行 DiPlay（苹果 CarPlay 投屏），针对 <strong>吉利星越L 2025 款 揽星（KX11 平台）</strong>做深度适配。</p>
+
+<p>
+  <span class="badge">适配车型：星越L 25款揽星</span>
+  <span class="badge">车机 KX11_A2 · ECARX / Android 11</span>
+  <span class="badge">有线 CarPlay / 方控 / HUD 投屏 已实车验证</span>
+  <span class="badge">GPL-3.0</span>
+</p>
+
+<h2>适配说明</h2>
+<ul>
+  <li><strong>本项目主要面向吉利星越L 2025 款 揽星（车机型号 KX11_A2，ECARX/OneOS，Android 11）</strong>，已在该车型上完成实车安装与验证：有线 CarPlay 连接与音视频、方向盘媒体/语音按键（经吉利 OneOS 输入服务，不依赖 ADB）、HUD 投屏（导航与时间）。</li>
+  <li>车辆数据（车速等）读取能力随版本持续完善；HUD 投屏需先在车机侧开启原厂「HUD 投屏」。</li>
+  <li>其他吉利/ECARX 车机可以尝试安装，但未做完整验证；非吉利车型建议使用上游原版 DiPlay。</li>
+</ul>
+
+<h2>安装（简明步骤）</h2>
+<ol>
+  <li>从本仓库 <a href="https://github.com/tianwenbro/DiPlay-GeeLy/releases">Releases</a> 下载两个 APK：主应用（Diplay-Geely-25-XingYue-L）与车辆数据车桥（Geely-25-XingYue-L-Vehicle-Bridge）。</li>
+  <li>先安装<strong>车桥 APK</strong>，再安装<strong>主应用 APK</strong>；两包签名一致，直接覆盖升级即可，请勿卸载重装（会丢配置）。</li>
+  <li>打开主应用、授予所需权限，USB 连接 iPhone 即可使用 CarPlay。无线方式请先完成一次蓝牙配对，再按设置里的连接引导操作。</li>
+</ol>
+<p>详细步骤与常见问题见 <a href="GEELY-INSTALL.zh-CN.html">吉利安装说明（中文）</a> 与 <a href="INSTALL.html">INSTALL</a>；遇到问题请通过仓库的 Issue 模板反馈（含车型信息收集）。</p>
+
+<h2>文档索引</h2>
+<ul class="docs">
+  <li><a href="GEELY-INSTALL.zh-CN.html">吉利安装说明（zh-CN）</a></li>
+  <li><a href="INSTALL.html">安装说明 INSTALL</a></li>
+  <li><a href="CONNECTION_SETUP.html">连接设置 CONNECTION SETUP</a></li>
+  <li><a href="EXISTING_WIFI.html">现有 Wi-Fi / 同一局域网</a></li>
+  <li><a href="WIRELESS_HOTSPOT_JOIN.html">无线热点加入问题</a></li>
+  <li><a href="COMPATIBILITY.html">兼容性 COMPATIBILITY</a></li>
+  <li><a href="PRIVACY.html">隐私说明 PRIVACY</a></li>
+  <li><a href="TESTING.html">测试说明 TESTING</a></li>
+  <li><a href="VALIDATION.html">验证记录 VALIDATION</a></li>
+  <li><a href="THIRD_PARTY_NOTICES.html">第三方声明</a></li>
+</ul>
+
+<h2>开源声明</h2>
+<ul>
+  <li>本项目基于开源项目 <a href="https://github.com/shihabal3amri/DiPlay">DiPlay</a>（作者 shihabal3amri）分叉开发；吉利适配相关的集成思路与部分代码来源于 <a href="https://github.com/carlito12345/DiPlay">carlito12345 的 DiPlay fork</a>。</li>
+  <li>本项目以 <strong>GNU GPL-3.0</strong> 许可证发布，详见 <a href="https://github.com/tianwenbro/DiPlay-GeeLy/blob/main/LICENSE">LICENSE</a> 与 <a href="THIRD_PARTY_NOTICES.html">第三方声明</a>。再分发与修改须遵守 GPL-3.0（保留版权声明、公开源码）。</li>
+  <li>仓库不包含吉利汽车、亿咖通（ECARX）、苹果（Apple）的任何专有代码或私钥材料；CarPlay 连接所需的身份材料须由使用者自行合法获取并自负责任。</li>
+  <li>车辆数据车桥（Vehicle Bridge）为独立实现，对车辆属性仅做<strong>只读</strong>读取，不向车辆发送控制指令。</li>
+</ul>
+
+<h2>免责声明</h2>
+<div class="warn">
+  <ul>
+    <li>本项目是非官方第三方项目，与吉利汽车、亿咖通（ECARX）、苹果公司（Apple）均无关联，也未获其背书、授权或支持。CarPlay 是 Apple Inc. 的商标，相关名称仅作说明用途。</li>
+    <li>向车机侧载（sideload）第三方应用存在风险：可能影响车机稳定性、原厂功能、后续 OTA 升级甚至整车质保；请自行评估并在知情前提下使用。</li>
+    <li>行车安全第一：请勿在行驶中操作本应用或车机；请遵守所在地区交通法规；应用显示的导航、车速等信息仅供参考，一切以车辆仪表与交通信号为准。</li>
+    <li>请仅在你拥有或已取得明确授权的车辆上安装使用；严禁用于任何非法用途。</li>
+    <li>本软件按「现状（AS IS）」提供，不附带任何明示或暗示的担保；因使用或无法使用本软件而产生的任何直接或间接损失，作者与贡献者概不负责。</li>
+  </ul>
+</div>
+
+<footer>
+  <p>仓库：<a href="https://github.com/tianwenbro/DiPlay-GeeLy">github.com/tianwenbro/DiPlay-GeeLy</a> · 适配车型：吉利星越L 2025 款 揽星（KX11）</p>
+  <p>许可：GPL-3.0 · 问题反馈：<a href="https://github.com/tianwenbro/DiPlay-GeeLy/issues">Issues</a></p>
+</footer>
+
+</body>
+</html>
