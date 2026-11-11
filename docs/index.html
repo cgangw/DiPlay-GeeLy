@@ -49,6 +49,8 @@
   footer { margin-top: 3rem; color: #8a909a; font-size: .86rem; border-top: 1px solid #e6e8ec;
            padding-top: 1rem; }
   code { background: #f3f4f6; padding: 1px 5px; border-radius: 4px; font-size: .9em; }
+  .tip { background: #eef6ff; border: 1px solid #c8dcf5; border-radius: 12px;
+         padding: 14px 20px; font-size: .93rem; }
   [hidden] { display: none !important; }
 </style>
 </head>
@@ -82,8 +84,11 @@
   <ol class="steps">
     <li><strong>下载并安装两个 APK</strong>：点击上方按钮，或到 <a href="https://github.com/tianwenbro/DiPlay-GeeLy/releases">Releases</a> 页下载；用 <span class="hl">U 盘</span>或 <code>adb install</code> 装进车机（车机浏览器无法安装）。<strong>先装车桥，再装主应用</strong>。</li>
     <li><strong>配置车辆</strong>：打开主应用，授予蓝牙 / 位置 / 麦克风权限；在「车辆数据」页开启开发者选项（版本号连点 7 次），选择车辆 <span class="hl">星越 L · KX11（25 揽星）</span>并保存，车桥连接状态显示 READY 即正常。</li>
-    <li><strong>连接 iPhone</strong>：USB 数据线连接即插即用；无线方式先连车机内置热点，完成一次蓝牙配对，再按设置里的连接引导操作。</li>
+    <li><strong>连接 iPhone</strong>：USB 数据线连接即插即用，<strong>首次连接系统会弹出「VPN 连接请求」提示，请选择允许 / 确定</strong>（这是 DiPlay 的本地数据通道，不是真正的 VPN，不会消耗流量，拒绝则无法连接）；无线方式先连车机内置热点，完成一次蓝牙配对，再按设置里的连接引导操作。</li>
   </ol>
+  <div class="tip">
+    <strong>装过其他 DiPlay / 车桥？请先卸载再装。</strong>本仓库主应用与上游原版 DiPlay 等改编版共用包名（<code>com.shihab.diplay</code>），签名不同，未卸载旧版会提示「应用未安装」；即使包名不同、能并存的其他版本，也会抢占 USB / 音频 / 无线连接导致冲突。卸载方法：车机「设置 → 应用管理」找到旧版逐个卸载，或用 <code>adb uninstall com.shihab.diplay</code> / <code>adb uninstall com.geely.desktop.vehicle.bridge</code>（其他版本以实际包名为准）。卸载会清除旧版配置，装好后按上面步骤重新配置一次即可；本仓库自己的版本之间可直接覆盖升级（签名一致）。
+  </div>
   <p>方控按键、车况数据与 HUD 投屏在连接成功后自动生效。详细图文（含排障表）见 <a href="GEELY-INSTALL.zh-CN.html">吉利安装说明（简体中文）</a>。</p>
 
   <h2><span class="num">02</span>下载与更新</h2>
@@ -136,8 +141,11 @@
   <ol class="steps">
     <li><strong>Download and install both APKs</strong> (buttons above, or the <a href="https://github.com/tianwenbro/DiPlay-GeeLy/releases">Releases</a> page) via <span class="hl">USB drive</span> or <code>adb install</code> — the head-unit browser cannot install them. <strong>Install the bridge first, then the main app.</strong></li>
     <li><strong>Configure the car</strong>: open the app, grant Bluetooth / location / microphone permissions; in Vehicle data, unlock developer options (tap the version 7 times), select <span class="hl">Xingyue L · KX11 (2025)</span> and save. Bridge status should show READY.</li>
-    <li><strong>Connect the iPhone</strong>: plug in USB and it just works; for wireless, join the car's built-in hotspot, pair Bluetooth once, then follow the in-app connection guide.</li>
+    <li><strong>Connect the iPhone</strong>: plug in USB and it just works — <strong>on the first connection Android shows a "VPN connection request" dialog; tap Allow / OK</strong> (this is DiPlay's local data channel, not a real VPN, no data leaves the car; declining blocks the connection). For wireless, join the car's built-in hotspot, pair Bluetooth once, then follow the in-app connection guide.</li>
   </ol>
+  <div class="tip">
+    <strong>Installed another DiPlay / bridge before? Uninstall it first.</strong> This build shares its package name (<code>com.shihab.diplay</code>) with upstream DiPlay and other variants but uses a different signature — without uninstalling, install fails with "App not installed". Variants with different package names may coexist but fight over USB / audio / wireless and cause conflicts. How to remove: head unit <em>Settings → Apps</em>, uninstall each old app, or <code>adb uninstall com.shihab.diplay</code> / <code>adb uninstall com.geely.desktop.vehicle.bridge</code> (use the actual package name for other variants). Uninstalling clears old settings — reconfigure once after installing. Updates between builds of this repo install over each other (same signature).
+  </div>
   <p>Wheel keys, vehicle data and HUD activate automatically once connected. Full illustrated guide: <a href="GEELY-INSTALL.zh-CN.html">Geely install guide (Simplified Chinese)</a>.</p>
 
   <h2><span class="num">02</span>Downloads &amp; updates</h2>
