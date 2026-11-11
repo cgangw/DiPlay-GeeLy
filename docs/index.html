@@ -89,6 +89,7 @@
   <div class="tip" style="background:#fff4f0;border-color:#f5c6b8">
     <strong>⚠ 星越L 必做：USB 连接前用 ADB 放行 VPN（否则 USB 连不上 CarPlay）。</strong>首次安装后、第一次用 USB 线连接 iPhone 之前，车机连电脑开启 ADB 调试并执行：
     <br><code>adb shell appops set com.shihab.diplay ACTIVATE_VPN allow</code>
+    <br>如果用的是 ATV Tools 等<strong>无线 ADB</strong>（手机连车机），在其终端里执行（无需 adb shell 前缀）：<code>appops set com.shihab.diplay ACTIVATE_VPN allow</code>
     <br>执行一次即可长期生效。应用内连接帮助页也会显示这条命令，车桥若有车机 ADB 权限也会尝试自动授权；换装不同包名的版本后需对新包名再执行一次。
   </div>
   <div class="tip">
@@ -151,6 +152,7 @@
   <div class="tip" style="background:#fff4f0;border-color:#f5c6b8">
     <strong>⚠ Xingyue L required: grant VPN via ADB for USB connection (otherwise USB CarPlay cannot connect).</strong> After the first install and before the first USB session with your iPhone, enable ADB debugging on the head unit and run:
     <br><code>adb shell appops set com.shihab.diplay ACTIVATE_VPN allow</code>
+    <br>If connecting over <strong>wireless ADB</strong> with ATV Tools or similar (phone to head unit), run in its terminal (no <code>adb shell</code> prefix): <code>appops set com.shihab.diplay ACTIVATE_VPN allow</code>
     <br>One run lasts. The in-app connection help shows the same command, and the bridge attempts to grant it automatically when it has head-unit ADB access. Re-run for a different package name after switching builds.
   </div>
   <div class="tip">
