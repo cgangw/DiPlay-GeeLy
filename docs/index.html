@@ -82,15 +82,13 @@
 
   <h2 id="install"><span class="num">01</span>安装到星越L（三步上车）</h2>
   <ol class="steps">
-    <li><strong>下载并安装两个 APK</strong>：点击上方按钮，或到 <a href="https://github.com/tianwenbro/DiPlay-GeeLy/releases">Releases</a> 页下载；用 <span class="hl">U 盘</span>或 <code>adb install</code> 装进车机（车机浏览器无法安装）。<strong>先装车桥，再装主应用</strong>。</li>
+    <li><strong>下载并安装两个 APK</strong>：点击上方按钮，或到 <a href="https://github.com/tianwenbro/DiPlay-GeeLy/releases">Releases</a> 页下载；用 <span class="hl">U 盘</span>或 <code>adb install</code> 装进车机（车机浏览器无法安装）。<strong>先装车桥，再装主应用，两包必须配套安装、缺一不可</strong>——车桥负责读取车速 / 续航 / 温度等车况，只装主应用会缺车况数据，只装车桥无法投屏。</li>
     <li><strong>配置车辆</strong>：打开主应用，授予蓝牙 / 位置 / 麦克风权限；在「车辆数据」页开启开发者选项（版本号连点 7 次），选择车辆 <span class="hl">星越 L · KX11（25 揽星）</span>并保存，车桥连接状态显示 READY 即正常。</li>
     <li><strong>连接 iPhone</strong>：USB 数据线连接即插即用。普通安卓会弹「VPN 连接请求」，<strong>星越L（OneOS 车机）通常不弹这个框，首次安装必须用 ADB 手动授权一次才能连接</strong>，见下方说明；无线方式先连车机内置热点，完成一次蓝牙配对，再按设置里的连接引导操作。</li>
   </ol>
   <div class="tip" style="background:#fff4f0;border-color:#f5c6b8">
-    <strong>⚠ 星越L 必做：首次安装后用 ADB 放行 VPN（否则连不上 CarPlay）。</strong>车机连电脑开启 ADB 调试后执行（装的是正式版 APK）：
+    <strong>⚠ 星越L 必做：USB 连接前用 ADB 放行 VPN（否则 USB 连不上 CarPlay）。</strong>首次安装后、第一次用 USB 线连接 iPhone 之前，车机连电脑开启 ADB 调试并执行：
     <br><code>adb shell appops set com.shihab.diplay ACTIVATE_VPN allow</code>
-    <br>如果你装的是 <strong>hud-test 测试包</strong>（包名带后缀），则执行：
-    <br><code>adb shell appops set com.shihab.diplay.hudtest ACTIVATE_VPN allow</code>
     <br>执行一次即可长期生效。应用内连接帮助页也会显示这条命令，车桥若有车机 ADB 权限也会尝试自动授权；换装不同包名的版本后需对新包名再执行一次。
   </div>
   <div class="tip">
@@ -146,15 +144,13 @@
 
   <h2 id="install"><span class="num">01</span>Install on the Xingyue L (3 steps)</h2>
   <ol class="steps">
-    <li><strong>Download and install both APKs</strong> (buttons above, or the <a href="https://github.com/tianwenbro/DiPlay-GeeLy/releases">Releases</a> page) via <span class="hl">USB drive</span> or <code>adb install</code> — the head-unit browser cannot install them. <strong>Install the bridge first, then the main app.</strong></li>
+    <li><strong>Download and install both APKs</strong> (buttons above, or the <a href="https://github.com/tianwenbro/DiPlay-GeeLy/releases">Releases</a> page) via <span class="hl">USB drive</span> or <code>adb install</code> — the head-unit browser cannot install them. <strong>Install the bridge first, then the main app — the two packages are a matched pair and both are required</strong>: the bridge reads speed / range / temperature; with only the main app there is no vehicle data, with only the bridge there is no projection.</li>
     <li><strong>Configure the car</strong>: open the app, grant Bluetooth / location / microphone permissions; in Vehicle data, unlock developer options (tap the version 7 times), select <span class="hl">Xingyue L · KX11 (2025)</span> and save. Bridge status should show READY.</li>
     <li><strong>Connect the iPhone</strong>: plug in USB and it just works. Stock Android shows a "VPN connection request" dialog — <strong>on the Xingyue L (OneOS head unit) it usually does not, so the first install needs a one-time ADB grant or CarPlay cannot connect</strong>; see below. For wireless, join the car's built-in hotspot, pair Bluetooth once, then follow the in-app connection guide.</li>
   </ol>
   <div class="tip" style="background:#fff4f0;border-color:#f5c6b8">
-    <strong>⚠ Xingyue L required: grant VPN via ADB after the first install (otherwise CarPlay cannot connect).</strong> With the head unit in ADB debugging, run (for the release APK):
+    <strong>⚠ Xingyue L required: grant VPN via ADB for USB connection (otherwise USB CarPlay cannot connect).</strong> After the first install and before the first USB session with your iPhone, enable ADB debugging on the head unit and run:
     <br><code>adb shell appops set com.shihab.diplay ACTIVATE_VPN allow</code>
-    <br>If you installed the <strong>hud-test build</strong> (package with suffix), run:
-    <br><code>adb shell appops set com.shihab.diplay.hudtest ACTIVATE_VPN allow</code>
     <br>One run lasts. The in-app connection help shows the same command, and the bridge attempts to grant it automatically when it has head-unit ADB access. Re-run for a different package name after switching builds.
   </div>
   <div class="tip">
