@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Diplay Geely · 吉利星越L 2025款揽星 CarPlay适配</title>
+<title>Diplay Geely · 吉利星越L 2025款揽星 CarPlay 投屏适配</title>
 <meta name="description" content="Diplay Geely：吉利星越L（KX11，2025款揽星）实车验证的 CarPlay 投屏适配。有线/无线连接、方向盘按键直控、车速续航温度实时显示、导航投进仪表 HUD。免越狱、免改装，开源免费。">
 <meta name="keywords" content="吉利星越L, CarPlay, KX11, ECARX, 车机, DiPlay, Geely, Xingyue L, 无线CarPlay, HUD投屏">
 <style>
@@ -80,6 +80,7 @@
       <a class="btn btn-ghost" href="#install">安装步骤</a>
     </div>
     <p class="note">安装到<strong>车机</strong>，而不是 iPhone · Android 11 车机 · 有线与无线均支持</p>
+    <p class="note dl-count" hidden>已累计下载 <bdi></bdi> 次（主应用 + 车桥 APK）</p>
   </div>
 
   <h2 id="install"><span class="num">01</span>安装到星越L（三步上车）</h2>
@@ -143,6 +144,7 @@
       <a class="btn btn-ghost" href="#install">Install steps</a>
     </div>
     <p class="note">Install on the <strong>head unit</strong>, not the iPhone · Android 11 head unit · USB and wireless</p>
+    <p class="note dl-count" hidden><bdi></bdi> APK downloads so far (main app + bridge)</p>
   </div>
 
   <h2 id="install"><span class="num">01</span>Install on the Xingyue L (3 steps)</h2>
@@ -207,6 +209,26 @@
     btn.addEventListener('click', function () {
       apply(document.documentElement.lang === 'en' ? 'zh' : 'en');
     });
+  })();
+</script>
+<script>
+  (function () {
+    var nodes = document.querySelectorAll('.dl-count');
+    if (!nodes.length || !window.fetch) return;
+    fetch('assets/downloads.json', { cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (data) {
+        var total = data && Number(data.apkDownloads);
+        if (!(total > 0)) return;
+        var text = String(total);
+        try { text = new Intl.NumberFormat(document.documentElement.lang + '-u-nu-latn').format(total); } catch (e) {}
+        nodes.forEach(function (node) {
+          var bdi = node.querySelector('bdi');
+          if (bdi) bdi.textContent = text;
+          node.hidden = false;
+        });
+      })
+      .catch(function () {});
   })();
 </script>
 </body>
