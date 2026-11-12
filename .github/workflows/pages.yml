@@ -1,10 +1,10 @@
-name: Publish download site
+name: Publish docs site
 on:
   push:
     branches: [main]
-    paths: ['site/**', 'scripts/build_site.py', 'scripts/download_count.py', '.github/workflows/pages.yml']
+    paths: ['docs/**', 'scripts/download_count.py', '.github/workflows/pages.yml']
   schedule:
-    - cron: '23 * * * *' # refresh the download count
+    - cron: '23 3 * * *' # refresh the download count once a day (03:23 UTC ≈ 11:23 Beijing)
   workflow_dispatch:
 permissions:
   contents: read
@@ -21,13 +21,18 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-      - run: python3 scripts/build_site.py
-      - run: python3 scripts/download_count.py
+      - uses: actions/configure-pages@v5
+      - name: Refresh the download count
+        run: python3 scripts/download_count.py
         env:
           GITHUB_TOKEN: ${{ github.token }}
-      - uses: actions/configure-pages@v5
+      - name: Build the docs site with Jekyll
+        uses: actions/jekyll-build-pages@v1
+        with:
+          source: ./docs
+          destination: ./_site
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: site
+          path: ./_site
       - uses: actions/deploy-pages@v4
         id: deployment
